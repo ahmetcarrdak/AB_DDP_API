@@ -1,0 +1,6 @@
+﻿services:
+  ddpapi:
+    image: ddpapi
+    build:
+      context: .
+      dockerfile: DDPApi/Dockerfile
