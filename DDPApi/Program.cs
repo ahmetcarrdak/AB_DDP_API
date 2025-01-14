@@ -21,11 +21,22 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("ProjectConnection")));
 
-builder.Services.AddScoped<IStore, StoreService>();
-builder.Services.AddScoped<IPerson, PersonService>();
+builder.Services.AddScoped<IAlert, AlertService>();
+builder.Services.AddScoped<IInventoryMovement, InventoryMovementService>();
+builder.Services.AddScoped<IMachine, MachineService>();
+builder.Services.AddScoped<IMachineFault, MachineFaultService>();
+builder.Services.AddScoped<IMaintenanceRecord, MaintenanceRecordService>();
+builder.Services.AddScoped<INotification, NotificationService>();
 builder.Services.AddScoped<IOrder, OrderService>();
-builder.Services.AddScoped<IWork, WorkService>();
+builder.Services.AddScoped<IPerson, PersonService>();
+builder.Services.AddScoped<IQualityControlRecord, QualityControlRecordService>();
 builder.Services.AddScoped<IStation, StationService>();
+builder.Services.AddScoped<IStore, StoreService>();
+builder.Services.AddScoped<ISupplier, SupplierService>();
+builder.Services.AddScoped<IWork, WorkService>();
+builder.Services.AddScoped<IWorkforcePlanning, WorkforcePlanningService>();
+
+
 
 builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();

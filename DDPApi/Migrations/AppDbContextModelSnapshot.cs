@@ -22,6 +22,296 @@ namespace DDPApi.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("DDPApi.Models.Alert", b =>
+                {
+                    b.Property<int>("AlertId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("AlertId"));
+
+                    b.Property<DateTime>("AlertDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("AlertType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsResolved")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("MachineId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ResolvedBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("AlertId");
+
+                    b.ToTable("Alerts");
+                });
+
+            modelBuilder.Entity("DDPApi.Models.InventoryMovement", b =>
+                {
+                    b.Property<int>("InventoryMovementId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("InventoryMovementId"));
+
+                    b.Property<decimal>("Cost")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("DestinationWarehouse")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ItemName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("MovementDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("MovementType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SourceWarehouse")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("InventoryMovementId");
+
+                    b.ToTable("InventoryMovements");
+                });
+
+            modelBuilder.Entity("DDPApi.Models.Machine", b =>
+                {
+                    b.Property<int>("MachineId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("MachineId"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsOperational")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Manufacturer")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("PurchaseDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("MachineId");
+
+                    b.ToTable("Machines");
+                });
+
+            modelBuilder.Entity("DDPApi.Models.MachineFault", b =>
+                {
+                    b.Property<int>("FaultId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("FaultId"));
+
+                    b.Property<string>("Cause")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FaultDescription")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime?>("FaultEndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FaultSeverity")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("FaultStartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsResolved")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("MachineCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("MachineId")
+                        .HasMaxLength(100)
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ReportedBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ResolvedBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Solution")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("FaultId");
+
+                    b.HasIndex("MachineId");
+
+                    b.ToTable("MachineFaults");
+                });
+
+            modelBuilder.Entity("DDPApi.Models.MaintenanceRecord", b =>
+                {
+                    b.Property<int>("MaintenanceRecordId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("MaintenanceRecordId"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("MachineId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("MaintenanceDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("MaintenanceType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PerformedBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("MaintenanceRecordId");
+
+                    b.ToTable("MaintenanceRecords");
+                });
+
+            modelBuilder.Entity("DDPApi.Models.Notification", b =>
+                {
+                    b.Property<int>("NotificationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("NotificationId"));
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("NotificationDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("NotificationId");
+
+                    b.ToTable("Notifications");
+                });
+
+            modelBuilder.Entity("DDPApi.Models.QualityControlRecord", b =>
+                {
+                    b.Property<int>("QualityControlRecordId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("QualityControlRecordId"));
+
+                    b.Property<string>("Comments")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("TestDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TestResult")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TestType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TestedBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("QualityControlRecordId");
+
+                    b.ToTable("QualityControlRecords");
+                });
+
             modelBuilder.Entity("DDPApi.Models.Station", b =>
                 {
                     b.Property<int>("StationId")
@@ -172,6 +462,102 @@ namespace DDPApi.Migrations
                     b.HasKey("StoreId");
 
                     b.ToTable("Stores");
+                });
+
+            modelBuilder.Entity("DDPApi.Models.Supplier", b =>
+                {
+                    b.Property<int>("SupplierId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("SupplierId"));
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ContactPerson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Rating")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("SupplierId");
+
+                    b.ToTable("Suppliers");
+                });
+
+            modelBuilder.Entity("DDPApi.Models.SupplierProduct", b =>
+                {
+                    b.Property<int>("SupplierProductId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("SupplierProductId"));
+
+                    b.Property<int>("LeadTimeInDays")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("SupplierId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("SupplierProductId");
+
+                    b.HasIndex("SupplierId");
+
+                    b.ToTable("SupplierProducts");
+                });
+
+            modelBuilder.Entity("DDPApi.Models.WorkforcePlanning", b =>
+                {
+                    b.Property<int>("WorkforcePlanningId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("WorkforcePlanningId"));
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsAssigned")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("ShiftEnd")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ShiftStart")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("StationId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TaskDescription")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("WorkforcePlanningId");
+
+                    b.ToTable("WorkforcePlannings");
                 });
 
             modelBuilder.Entity("Order", b =>
@@ -510,6 +896,24 @@ namespace DDPApi.Migrations
                     b.ToTable("Works");
                 });
 
+            modelBuilder.Entity("DDPApi.Models.MachineFault", b =>
+                {
+                    b.HasOne("DDPApi.Models.Machine", null)
+                        .WithMany("Faults")
+                        .HasForeignKey("MachineId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DDPApi.Models.SupplierProduct", b =>
+                {
+                    b.HasOne("DDPApi.Models.Supplier", null)
+                        .WithMany("SuppliedProducts")
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Order", b =>
                 {
                     b.HasOne("DDPApi.Models.Station", "Station")
@@ -526,6 +930,16 @@ namespace DDPApi.Migrations
                         .HasForeignKey("StationId");
 
                     b.Navigation("Station");
+                });
+
+            modelBuilder.Entity("DDPApi.Models.Machine", b =>
+                {
+                    b.Navigation("Faults");
+                });
+
+            modelBuilder.Entity("DDPApi.Models.Supplier", b =>
+                {
+                    b.Navigation("SuppliedProducts");
                 });
 #pragma warning restore 612, 618
         }

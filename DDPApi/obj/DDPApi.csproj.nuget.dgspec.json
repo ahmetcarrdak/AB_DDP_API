@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/ahmetcardak/Desktop/DDPApi/DDPApi/DDPApi.csproj": {}
+    "/Users/ahmetcardak/Desktop/AB_DDP_API/DDPApi/DDPApi.csproj": {}
   },
   "projects": {
-    "/Users/ahmetcardak/Desktop/DDPApi/DDPApi/DDPApi.csproj": {
+    "/Users/ahmetcardak/Desktop/AB_DDP_API/DDPApi/DDPApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/ahmetcardak/Desktop/DDPApi/DDPApi/DDPApi.csproj",
+        "projectUniqueName": "/Users/ahmetcardak/Desktop/AB_DDP_API/DDPApi/DDPApi.csproj",
         "projectName": "DDPApi",
-        "projectPath": "/Users/ahmetcardak/Desktop/DDPApi/DDPApi/DDPApi.csproj",
+        "projectPath": "/Users/ahmetcardak/Desktop/AB_DDP_API/DDPApi/DDPApi.csproj",
         "packagesPath": "/Users/ahmetcardak/.nuget/packages/",
-        "outputPath": "/Users/ahmetcardak/Desktop/DDPApi/DDPApi/obj/",
+        "outputPath": "/Users/ahmetcardak/Desktop/AB_DDP_API/DDPApi/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/ahmetcardak/.nuget/NuGet/NuGet.Config"

@@ -15,6 +15,17 @@ namespace DDPApi.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<Work> Works { get; set; }
         public DbSet<Station> Stations { get; set; }
+        public DbSet<MachineFault> MachineFaults { get; set; }
+        public DbSet<Machine> Machines { get; set; }
+        public DbSet<MaintenanceRecord> MaintenanceRecords { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+        public DbSet<Alert> Alerts { get; set; }
+        public DbSet<QualityControlRecord> QualityControlRecords { get; set; }
+        public DbSet<InventoryMovement> InventoryMovements { get; set; }
+        public DbSet<SupplierProduct> SupplierProducts { get; set; }
+        public DbSet<Supplier> Suppliers { get; set; }
+        public DbSet<WorkforcePlanning> WorkforcePlannings { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Store>(entity =>
