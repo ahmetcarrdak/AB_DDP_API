@@ -35,6 +35,8 @@ builder.Services.AddScoped<IStore, StoreService>();
 builder.Services.AddScoped<ISupplier, SupplierService>();
 builder.Services.AddScoped<IWork, WorkService>();
 builder.Services.AddScoped<IWorkforcePlanning, WorkforcePlanningService>();
+builder.Services.AddScoped<IPositions, PositionsService>();
+builder.Services.AddScoped<IStages, StagesService>();
 
 
 

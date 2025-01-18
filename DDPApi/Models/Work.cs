@@ -8,6 +8,7 @@ public class Work
     [Key]
     public int WorkId { get; set; }                             // İş benzersiz kimlik numarası
     public int? StationId { get; set; }                         // İstasyon ID'si
+    public int  StagesId {get; set;} = 1;
     
     [Required]
     [StringLength(100)]
@@ -93,4 +94,5 @@ public class Work
     [StringLength(500)]
     public string? SafetyNotes { get; set; }                    // Güvenlik notları ve önlemleri (opsiyonel)
     public Station Station { get; set; }
+    public Stages Stages { get; set; }
 }

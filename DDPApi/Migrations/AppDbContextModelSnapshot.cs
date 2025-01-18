@@ -277,6 +277,27 @@ namespace DDPApi.Migrations
                     b.ToTable("Notifications");
                 });
 
+            modelBuilder.Entity("DDPApi.Models.Positions", b =>
+                {
+                    b.Property<int>("PositionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PositionId"));
+
+                    b.Property<string>("PositionDescription")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PositionName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("PositionId");
+
+                    b.ToTable("Positions");
+                });
+
             modelBuilder.Entity("DDPApi.Models.QualityControlRecord", b =>
                 {
                     b.Property<int>("QualityControlRecordId")
@@ -310,6 +331,23 @@ namespace DDPApi.Migrations
                     b.HasKey("QualityControlRecordId");
 
                     b.ToTable("QualityControlRecords");
+                });
+
+            modelBuilder.Entity("DDPApi.Models.Stages", b =>
+                {
+                    b.Property<int>("StageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("StageId"));
+
+                    b.Property<string>("StageName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("StageId");
+
+                    b.ToTable("Stages");
                 });
 
             modelBuilder.Entity("DDPApi.Models.Station", b =>
@@ -398,7 +436,7 @@ namespace DDPApi.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -407,13 +445,13 @@ namespace DDPApi.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("ExpiryDate")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime>("LastInventoryDate")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Location")
                         .HasColumnType("text");
@@ -429,7 +467,7 @@ namespace DDPApi.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("PurchaseDate")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("QualityStatus")
                         .HasColumnType("text");
@@ -451,13 +489,13 @@ namespace DDPApi.Migrations
                         .HasColumnType("text");
 
                     b.Property<decimal>("UnitPrice")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("numeric");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<decimal>("Weight")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("numeric");
 
                     b.HasKey("StoreId");
 
@@ -650,6 +688,9 @@ namespace DDPApi.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<int>("StagesId")
+                        .HasColumnType("integer");
+
                     b.Property<int?>("StationId")
                         .HasColumnType("integer");
 
@@ -660,6 +701,8 @@ namespace DDPApi.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("OrderId");
+
+                    b.HasIndex("StagesId");
 
                     b.HasIndex("StationId");
 
@@ -743,9 +786,8 @@ namespace DDPApi.Migrations
                         .HasMaxLength(15)
                         .HasColumnType("character varying(15)");
 
-                    b.Property<string>("Position")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                    b.Property<int>("PositionId")
+                        .HasColumnType("integer");
 
                     b.Property<decimal?>("Salary")
                         .HasColumnType("decimal(18,2)");
@@ -761,6 +803,8 @@ namespace DDPApi.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PositionId");
 
                     b.ToTable("Persons");
                 });
@@ -869,6 +913,9 @@ namespace DDPApi.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<int>("StagesId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime?>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
@@ -890,6 +937,8 @@ namespace DDPApi.Migrations
                         .HasColumnType("character varying(50)");
 
                     b.HasKey("WorkId");
+
+                    b.HasIndex("StagesId");
 
                     b.HasIndex("StationId");
 
@@ -916,18 +965,45 @@ namespace DDPApi.Migrations
 
             modelBuilder.Entity("Order", b =>
                 {
+                    b.HasOne("DDPApi.Models.Stages", "Stages")
+                        .WithMany()
+                        .HasForeignKey("StagesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("DDPApi.Models.Station", "Station")
                         .WithMany()
                         .HasForeignKey("StationId");
+
+                    b.Navigation("Stages");
 
                     b.Navigation("Station");
                 });
 
+            modelBuilder.Entity("Person", b =>
+                {
+                    b.HasOne("DDPApi.Models.Positions", "Position")
+                        .WithMany()
+                        .HasForeignKey("PositionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Position");
+                });
+
             modelBuilder.Entity("Work", b =>
                 {
+                    b.HasOne("DDPApi.Models.Stages", "Stages")
+                        .WithMany()
+                        .HasForeignKey("StagesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("DDPApi.Models.Station", "Station")
                         .WithMany()
                         .HasForeignKey("StationId");
+
+                    b.Navigation("Stages");
 
                     b.Navigation("Station");
                 });

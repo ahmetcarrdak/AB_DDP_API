@@ -1,3 +1,4 @@
+using DDPApi.DTO;
 using DDPApi.Models;
 namespace DDPApi.Interfaces;
 
@@ -7,7 +8,7 @@ public interface IStore
     Task<bool> AddStoreAsync(Store store);
 
     // Malzeme güncelleme işlemi
-    Task<bool> UpdateStoreAsync(Store store);
+    Task<bool> UpdateStoreAsync(StoreDto storeDto);
 
     // Malzeme silme işlemi
     Task<bool> DeleteStoreAsync(int storeId);

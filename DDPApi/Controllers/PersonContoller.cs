@@ -1,6 +1,7 @@
 
 using DDPApi.Interfaces;
 using DDPApi.Models;
+using DDPApi.DTO;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DDPApi.Controllers
@@ -18,7 +19,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Person/all
         [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<Person>>> GetAllPersons()
+        public async Task<ActionResult<IEnumerable<PersonDto>>> GetAllPersons()
         {
             var persons = await _personService.GetAllPersonsAsync();
             return Ok(persons);
@@ -26,7 +27,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Person/active
         [HttpGet("active")]
-        public async Task<ActionResult<IEnumerable<Person>>> GetActivePersons()
+        public async Task<ActionResult<IEnumerable<PersonDto>>> GetActivePersons()
         {
             var persons = await _personService.GetActivePersonsAsync();
             return Ok(persons);
@@ -34,7 +35,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Person/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<Person>> GetPerson(int id)
+        public async Task<ActionResult<PersonDto>> GetPerson(int id)
         {
             var person = await _personService.GetPersonByIdAsync(id);
             if (person == null)
@@ -43,30 +44,42 @@ namespace DDPApi.Controllers
         }
 
         // POST: api/Person
-        [HttpPost]
-        public async Task<ActionResult<Person>> CreatePerson(Person person)
+        [HttpPost("create")]
+        public async Task<ActionResult<PersonDto>> CreatePerson(PersonDto personDto)
         {
-            var result = await _personService.AddPersonAsync(person);
+            var result = await _personService.AddPersonAsync(personDto);
             if (result == null)
                 return BadRequest();
-            return CreatedAtAction(nameof(GetPerson), new { id = result.Id }, result);
+            return Ok(result);
         }
 
-        // PUT: api/Person/{id}
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePerson(int id, Person person)
+        // PUT: api/update
+        [HttpPut("update")]
+        public async Task<IActionResult> UpdatePerson([FromBody] PersonUpdateDto personUpdateDto)
         {
-            if (id != person.Id)
-                return BadRequest();
+            if (personUpdateDto.Id == 0)
+            {
+                return BadRequest("ID is required in the request body.");
+            }
 
-            var result = await _personService.UpdatePersonAsync(person);
-            if (result == null)
-                return NotFound();
-            return NoContent();
+            try
+            {
+                // Güncellenmiş kişiyi al
+                var updatedPerson = await _personService.UpdatePersonAsync(personUpdateDto);
+
+                // Başarılı bir güncelleme sonrası 200 OK ile geri döner
+                return Ok(updatedPerson);
+            }
+            catch (ArgumentException)
+            {
+                // Kişi bulunamadıysa 404 döner
+                return NotFound("Person not found.");
+            }
         }
+
 
         // DELETE: api/Person/{id}
-        [HttpDelete("{id}")]
+        [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeletePerson(int id)
         {
             var result = await _personService.DeletePersonAsync(id);
@@ -77,7 +90,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Person/department/{department}
         [HttpGet("department/{department}")]
-        public async Task<ActionResult<IEnumerable<Person>>> GetPersonsByDepartment(string department)
+        public async Task<ActionResult<IEnumerable<PersonDto>>> GetPersonsByDepartment(string department)
         {
             var persons = await _personService.GetPersonsByDepartmentAsync(department);
             return Ok(persons);
@@ -85,7 +98,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Person/identity/{identityNumber}
         [HttpGet("identity/{identityNumber}")]
-        public async Task<ActionResult<Person>> GetPersonByIdentityNumber(string identityNumber)
+        public async Task<ActionResult<PersonDto>> GetPersonByIdentityNumber(string identityNumber)
         {
             var person = await _personService.GetPersonByIdentityNumberAsync(identityNumber);
             if (person == null)
@@ -95,7 +108,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Person/healthcheck
         [HttpGet("healthcheck")]
-        public async Task<ActionResult<IEnumerable<Person>>> GetPersonsWithExpiredHealthCheck()
+        public async Task<ActionResult<IEnumerable<PersonDto>>> GetPersonsWithExpiredHealthCheck()
         {
             var persons = await _personService.GetPersonsWithExpiredHealthCheckAsync();
             return Ok(persons);
@@ -111,7 +124,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Person/shift/{schedule}
         [HttpGet("shift/{schedule}")]
-        public async Task<ActionResult<IEnumerable<Person>>> GetPersonsByShiftSchedule(string schedule)
+        public async Task<ActionResult<IEnumerable<PersonDto>>> GetPersonsByShiftSchedule(string schedule)
         {
             var persons = await _personService.GetPersonsByShiftScheduleAsync(schedule);
             return Ok(persons);
@@ -134,5 +147,3 @@ namespace DDPApi.Controllers
         public string Phone { get; set; }
     }
 }
-
-

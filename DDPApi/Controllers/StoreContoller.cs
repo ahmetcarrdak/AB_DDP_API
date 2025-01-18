@@ -1,3 +1,4 @@
+using DDPApi.DTO;
 using DDPApi.Interfaces;
 using DDPApi.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -55,17 +56,15 @@ namespace DDPApi.Controllers
             return CreatedAtAction(nameof(GetStore), new { id = store.StoreId }, store);
         }
 
-        // PUT: api/Store/{id}
-        // Malzeme bilgilerini günceller
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateStore(int id, Store store)
+        // API endpointi
+        // PUT: api/Store/update
+        [HttpPut("update")]
+        public async Task<IActionResult> UpdateStore(StoreDto storeDto)
         {
-            if (id != store.StoreId)
-                return BadRequest();
-
-            var result = await _storeService.UpdateStoreAsync(store);
+            var result = await _storeService.UpdateStoreAsync(storeDto);
             if (!result)
-                return NotFound();
+                return NotFound(new { message = "Store not found." });
+
             return NoContent();
         }
 
@@ -181,11 +180,11 @@ namespace DDPApi.Controllers
         // GET: api/Store/pricerange
         // Fiyat aralığına göre malzemeleri listeler
         [HttpGet("pricerange")]
-        public async Task<ActionResult<IEnumerable<Store>>> GetStoresByPriceRange([FromQuery] decimal minPrice, [FromQuery] decimal maxPrice)
+        public async Task<ActionResult<IEnumerable<Store>>> GetStoresByPriceRange([FromQuery] decimal minPrice,
+            [FromQuery] decimal maxPrice)
         {
             var stores = await _storeService.GetStoresByPriceRangeAsync(minPrice, maxPrice);
             return Ok(stores);
         }
     }
 }
-
