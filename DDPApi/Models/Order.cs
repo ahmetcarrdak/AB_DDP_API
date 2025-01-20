@@ -6,7 +6,8 @@ public class Order
 {
     [Key]
     public int OrderId { get; set; }                             // Benzersiz kimlik numarası
-    public int? StationId { get; set; }                         // İstasyon ID'si
+
+    public int? StationId { get; set; } = 1;                     // İstasyon ID'si
     public int StagesId { get; set; } = 1;
 
 

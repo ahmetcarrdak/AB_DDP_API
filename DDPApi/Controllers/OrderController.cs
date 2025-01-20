@@ -1,5 +1,5 @@
 using DDPApi.Interfaces;
-using DDPApi.Models;
+using DDPApi.DTO;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DDPApi.Controllers
@@ -17,7 +17,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Order/all
         [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<Order>>> GetAllOrders()
+        public async Task<ActionResult<IEnumerable<OrderDto>>> GetAllOrders()
         {
             var orders = await _orderService.GetAllOrdersAsync();
             return Ok(orders);
@@ -25,7 +25,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Order/active
         [HttpGet("active")]
-        public async Task<ActionResult<IEnumerable<Order>>> GetActiveOrders()
+        public async Task<ActionResult<IEnumerable<OrderDto>>> GetActiveOrders()
         {
             var orders = await _orderService.GetActiveOrdersAsync();
             return Ok(orders);
@@ -33,7 +33,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Order/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<Order>> GetOrder(int id)
+        public async Task<ActionResult<OrderDto>> GetOrder(int id)
         {
             var order = await _orderService.GetOrderByIdAsync(id);
             if (order == null)
@@ -43,22 +43,22 @@ namespace DDPApi.Controllers
 
         // POST: api/Order
         [HttpPost]
-        public async Task<ActionResult<Order>> CreateOrder(Order order)
+        public async Task<ActionResult<OrderDto>> CreateOrder(OrderDto orderDto)
         {
-            var result = await _orderService.AddOrderAsync(order);
+            var result = await _orderService.AddOrderAsync(orderDto);
             if (!result)
                 return BadRequest();
-            return CreatedAtAction(nameof(GetOrder), new { id = order.OrderId }, order);
+            return CreatedAtAction(nameof(GetOrder), new { id = orderDto.OrderId }, orderDto);
         }
 
         // PUT: api/Order/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateOrder(int id, Order order)
+        public async Task<IActionResult> UpdateOrder(int id, OrderDto orderDto)
         {
-            if (id != order.OrderId)
+            if (id != orderDto.OrderId)
                 return BadRequest();
 
-            var result = await _orderService.UpdateOrderAsync(order);
+            var result = await _orderService.UpdateOrderAsync(orderDto);
             if (!result)
                 return NotFound();
             return NoContent();
@@ -76,15 +76,26 @@ namespace DDPApi.Controllers
 
         // GET: api/Order/customer/{customerId}
         [HttpGet("customer/{customerId}")]
-        public async Task<ActionResult<IEnumerable<Order>>> GetOrdersByCustomer(int customerId)
+        public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrdersByCustomer(int customerId)
         {
             var orders = await _orderService.GetOrdersByCustomerIdAsync(customerId);
             return Ok(orders);
         }
 
+        // GET: api/OrderStation/{orderId}
+        [HttpGet("StationInfo{orderId}")]
+        public async Task<ActionResult<OrderStationDto>> GetOrderStation(int orderId)
+        {
+            var orderStation = await _orderService.GetOrderStationAsync(orderId);
+            if (orderStation == null)
+                return NotFound();
+
+            return Ok(orderStation);
+        }
+        
         // GET: api/Order/daterange
         [HttpGet("daterange")]
-        public async Task<ActionResult<IEnumerable<Order>>> GetOrdersByDateRange([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrdersByDateRange([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
             var orders = await _orderService.GetOrdersByDateRangeAsync(startDate, endDate);
             return Ok(orders);
@@ -92,7 +103,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Order/status/{status}
         [HttpGet("status/{status}")]
-        public async Task<ActionResult<IEnumerable<Order>>> GetOrdersByStatus(string status)
+        public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrdersByStatus(string status)
         {
             var orders = await _orderService.GetOrdersByStatusAsync(status);
             return Ok(orders);
@@ -100,7 +111,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Order/unpaid
         [HttpGet("unpaid")]
-        public async Task<ActionResult<IEnumerable<Order>>> GetUnpaidOrders()
+        public async Task<ActionResult<IEnumerable<OrderDto>>> GetUnpaidOrders()
         {
             var orders = await _orderService.GetUnpaidOrdersAsync();
             return Ok(orders);
@@ -108,7 +119,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Order/employee/{employeeId}
         [HttpGet("employee/{employeeId}")]
-        public async Task<ActionResult<IEnumerable<Order>>> GetOrdersByEmployee(int employeeId)
+        public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrdersByEmployee(int employeeId)
         {
             var orders = await _orderService.GetOrdersByEmployeeIdAsync(employeeId);
             return Ok(orders);
@@ -116,7 +127,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Order/priority/{priority}
         [HttpGet("priority/{priority}")]
-        public async Task<ActionResult<IEnumerable<Order>>> GetOrdersByPriority(string priority)
+        public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrdersByPriority(string priority)
         {
             var orders = await _orderService.GetOrdersByPriorityAsync(priority);
             return Ok(orders);
@@ -124,7 +135,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Order/source/{source}
         [HttpGet("source/{source}")]
-        public async Task<ActionResult<IEnumerable<Order>>> GetOrdersBySource(string source)
+        public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrdersBySource(string source)
         {
             var orders = await _orderService.GetOrdersBySourceAsync(source);
             return Ok(orders);
@@ -132,7 +143,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Order/invoice/{invoiceNumber}
         [HttpGet("invoice/{invoiceNumber}")]
-        public async Task<ActionResult<Order>> GetOrderByInvoiceNumber(string invoiceNumber)
+        public async Task<ActionResult<OrderDto>> GetOrderByInvoiceNumber(string invoiceNumber)
         {
             var order = await _orderService.GetOrderByInvoiceNumberAsync(invoiceNumber);
             if (order == null)
@@ -142,7 +153,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Order/delayed
         [HttpGet("delayed")]
-        public async Task<ActionResult<IEnumerable<Order>>> GetDelayedOrders()
+        public async Task<ActionResult<IEnumerable<OrderDto>>> GetDelayedOrders()
         {
             var orders = await _orderService.GetDelayedOrdersAsync();
             return Ok(orders);
@@ -150,7 +161,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Order/cancelled
         [HttpGet("cancelled")]
-        public async Task<ActionResult<IEnumerable<Order>>> GetCancelledOrders()
+        public async Task<ActionResult<IEnumerable<OrderDto>>> GetCancelledOrders()
         {
             var orders = await _orderService.GetCancelledOrdersAsync();
             return Ok(orders);

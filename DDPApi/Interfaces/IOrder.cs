@@ -1,58 +1,61 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using DDPApi.Models;
+using DDPApi.DTO;
 
 namespace DDPApi.Interfaces
 {
     public interface IOrder
     {
         // Tüm siparişleri getirir
-        Task<IEnumerable<Order>> GetAllOrdersAsync();
+        Task<IEnumerable<OrderDto>> GetAllOrdersAsync();
 
         // Aktif siparişleri getirir
-        Task<IEnumerable<Order>> GetActiveOrdersAsync();
+        Task<IEnumerable<OrderDto>> GetActiveOrdersAsync();
 
         // ID'ye göre sipariş getirir
-        Task<Order> GetOrderByIdAsync(int id);
+        Task<OrderDto> GetOrderByIdAsync(int id);
 
         // Yeni sipariş ekler
-        Task<bool> AddOrderAsync(Order order);
+        Task<bool> AddOrderAsync(OrderDto orderDto);
 
         // Sipariş bilgilerini günceller
-        Task<bool> UpdateOrderAsync(Order order);
+        Task<bool> UpdateOrderAsync(OrderDto orderDto);
 
         // Sipariş siler
         Task<bool> DeleteOrderAsync(int id);
 
         // Belirli bir müşterinin siparişlerini getirir
-        Task<IEnumerable<Order>> GetOrdersByCustomerIdAsync(int customerId);
+        Task<IEnumerable<OrderDto>> GetOrdersByCustomerIdAsync(int customerId);
+        
+        // Belirli bir ürünün istasyon bilgilerini getirir
+        Task<OrderStationDto> GetOrderStationAsync(int orderId);
 
         // Belirli bir tarih aralığındaki siparişleri getirir
-        Task<IEnumerable<Order>> GetOrdersByDateRangeAsync(DateTime startDate, DateTime endDate);
+        Task<IEnumerable<OrderDto>> GetOrdersByDateRangeAsync(DateTime startDate, DateTime endDate);
 
         // Belirli bir duruma sahip siparişleri getirir (Beklemede, Üretimde, Tamamlandı vb.)
-        Task<IEnumerable<Order>> GetOrdersByStatusAsync(string status);
+        Task<IEnumerable<OrderDto>> GetOrdersByStatusAsync(string status);
 
         // Ödenmemiş siparişleri getirir
-        Task<IEnumerable<Order>> GetUnpaidOrdersAsync();
+        Task<IEnumerable<OrderDto>> GetUnpaidOrdersAsync();
 
         // Belirli bir personele atanmış siparişleri getirir
-        Task<IEnumerable<Order>> GetOrdersByEmployeeIdAsync(int employeeId);
+        Task<IEnumerable<OrderDto>> GetOrdersByEmployeeIdAsync(int employeeId);
 
         // Öncelik durumuna göre siparişleri getirir
-        Task<IEnumerable<Order>> GetOrdersByPriorityAsync(string priority);
+        Task<IEnumerable<OrderDto>> GetOrdersByPriorityAsync(string priority);
 
         // Sipariş kaynağına göre siparişleri getirir
-        Task<IEnumerable<Order>> GetOrdersBySourceAsync(string source);
+        Task<IEnumerable<OrderDto>> GetOrdersBySourceAsync(string source);
 
         // Fatura numarasına göre sipariş getirir
-        Task<Order> GetOrderByInvoiceNumberAsync(string invoiceNumber);
+        Task<OrderDto> GetOrderByInvoiceNumberAsync(string invoiceNumber);
 
         // Teslimatı geciken siparişleri getirir
-        Task<IEnumerable<Order>> GetDelayedOrdersAsync();
+        Task<IEnumerable<OrderDto>> GetDelayedOrdersAsync();
 
         // İptal edilen siparişleri getirir
-        Task<IEnumerable<Order>> GetCancelledOrdersAsync();
+        Task<IEnumerable<OrderDto>> GetCancelledOrdersAsync();
     }
 }
