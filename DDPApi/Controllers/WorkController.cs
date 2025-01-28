@@ -1,6 +1,6 @@
 using DDPApi.Interfaces;
-using DDPApi.Models;
 using Microsoft.AspNetCore.Mvc;
+using DDPApi.DTO;
 
 namespace DDPApi.Controllers
 {
@@ -25,7 +25,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Work/active
         [HttpGet("active")]
-        public async Task<ActionResult<IEnumerable<Work>>> GetActiveWorks()
+        public async Task<ActionResult<IEnumerable<WorkDto>>> GetActiveWorks()
         {
             var works = await _workService.GetActiveWorksAsync();
             return Ok(works);
@@ -33,7 +33,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Work/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<Work>> GetWork(int id)
+        public async Task<ActionResult<WorkDto>> GetWork(int id)
         {
             var work = await _workService.GetWorkByIdAsync(id);
             if (work == null)
@@ -43,22 +43,22 @@ namespace DDPApi.Controllers
 
         // POST: api/Work
         [HttpPost]
-        public async Task<ActionResult<Work>> CreateWork(Work work)
+        public async Task<ActionResult<WorkDto>> CreateWork(WorkDto workDto)
         {
-            var result = await _workService.AddWorkAsync(work);
+            var result = await _workService.AddWorkAsync(workDto);
             if (!result)
                 return BadRequest();
-            return CreatedAtAction(nameof(GetWork), new { id = work.WorkId }, work);
+            return CreatedAtAction(nameof(GetWork), new { id = workDto.WorkId }, workDto);
         }
 
         // PUT: api/Work/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateWork(int id, Work work)
+        public async Task<IActionResult> UpdateWork(int id, WorkDto workDto)
         {
-            if (id != work.WorkId)
+            if (id != workDto.WorkId)
                 return BadRequest();
 
-            var result = await _workService.UpdateWorkAsync(work);
+            var result = await _workService.UpdateWorkAsync(workDto);
             if (!result)
                 return NotFound();
             return NoContent();
@@ -76,7 +76,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Work/department/{departmentId}
         [HttpGet("department/{departmentId}")]
-        public async Task<ActionResult<IEnumerable<Work>>> GetWorksByDepartment(int departmentId)
+        public async Task<ActionResult<IEnumerable<WorkDto>>> GetWorksByDepartment(int departmentId)
         {
             var works = await _workService.GetWorksByDepartmentIdAsync(departmentId);
             return Ok(works);
@@ -84,7 +84,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Work/employee/{employeeId}
         [HttpGet("employee/{employeeId}")]
-        public async Task<ActionResult<IEnumerable<Work>>> GetWorksByEmployee(int employeeId)
+        public async Task<ActionResult<IEnumerable<WorkDto>>> GetWorksByEmployee(int employeeId)
         {
             var works = await _workService.GetWorksByEmployeeIdAsync(employeeId);
             return Ok(works);
@@ -92,7 +92,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Work/priority/{priority}
         [HttpGet("priority/{priority}")]
-        public async Task<ActionResult<IEnumerable<Work>>> GetWorksByPriority(string priority)
+        public async Task<ActionResult<IEnumerable<WorkDto>>> GetWorksByPriority(string priority)
         {
             var works = await _workService.GetWorksByPriorityAsync(priority);
             return Ok(works);
@@ -100,7 +100,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Work/status/{status}
         [HttpGet("status/{status}")]
-        public async Task<ActionResult<IEnumerable<Work>>> GetWorksByStatus(string status)
+        public async Task<ActionResult<IEnumerable<WorkDto>>> GetWorksByStatus(string status)
         {
             var works = await _workService.GetWorksByStatusAsync(status);
             return Ok(works);
@@ -108,7 +108,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Work/daterange
         [HttpGet("daterange")]
-        public async Task<ActionResult<IEnumerable<Work>>> GetWorksByDateRange([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        public async Task<ActionResult<IEnumerable<WorkDto>>> GetWorksByDateRange([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
             var works = await _workService.GetWorksByDateRangeAsync(startDate, endDate);
             return Ok(works);
@@ -116,7 +116,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Work/delayed
         [HttpGet("delayed")]
-        public async Task<ActionResult<IEnumerable<Work>>> GetDelayedWorks()
+        public async Task<ActionResult<IEnumerable<WorkDto>>> GetDelayedWorks()
         {
             var works = await _workService.GetDelayedWorksAsync();
             return Ok(works);
@@ -124,7 +124,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Work/cancelled
         [HttpGet("cancelled")]
-        public async Task<ActionResult<IEnumerable<Work>>> GetCancelledWorks()
+        public async Task<ActionResult<IEnumerable<WorkDto>>> GetCancelledWorks()
         {
             var works = await _workService.GetCancelledWorksAsync();
             return Ok(works);
@@ -132,7 +132,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Work/recurring
         [HttpGet("recurring")]
-        public async Task<ActionResult<IEnumerable<Work>>> GetRecurringWorks()
+        public async Task<ActionResult<IEnumerable<WorkDto>>> GetRecurringWorks()
         {
             var works = await _workService.GetRecurringWorksAsync();
             return Ok(works);
@@ -140,7 +140,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Work/pending-approval
         [HttpGet("pending-approval")]
-        public async Task<ActionResult<IEnumerable<Work>>> GetPendingApprovalWorks()
+        public async Task<ActionResult<IEnumerable<WorkDto>>> GetPendingApprovalWorks()
         {
             var works = await _workService.GetPendingApprovalWorksAsync();
             return Ok(works);
@@ -148,7 +148,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Work/safety-risk
         [HttpGet("safety-risk")]
-        public async Task<ActionResult<IEnumerable<Work>>> GetSafetyRiskWorks()
+        public async Task<ActionResult<IEnumerable<WorkDto>>> GetSafetyRiskWorks()
         {
             var works = await _workService.GetSafetyRiskWorksAsync();
             return Ok(works);
@@ -156,7 +156,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Work/quality-score/{minScore}
         [HttpGet("quality-score/{minScore}")]
-        public async Task<ActionResult<IEnumerable<Work>>> GetWorksByQualityScore(int minScore)
+        public async Task<ActionResult<IEnumerable<WorkDto>>> GetWorksByQualityScore(int minScore)
         {
             var works = await _workService.GetWorksByQualityScoreAsync(minScore);
             return Ok(works);

@@ -83,7 +83,7 @@ namespace DDPApi.Controllers
         }
 
         // GET: api/OrderStation/{orderId}
-        [HttpGet("StationInfo{orderId}")]
+        [HttpGet("StationInfo/{orderId}")]
         public async Task<ActionResult<OrderStationDto>> GetOrderStation(int orderId)
         {
             var orderStation = await _orderService.GetOrderStationAsync(orderId);

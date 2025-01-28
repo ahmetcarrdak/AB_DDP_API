@@ -34,9 +34,6 @@ public class Work
     [Required]
     [StringLength(50)]
     public string Priority { get; set; }                        // Öncelik seviyesi
-    
-    public int AssignedDepartmentId { get; set; }               // İşin atandığı departman ID'si
-    
     public int? AssignedEmployeeId { get; set; }                // İşi yapacak personel ID'si (opsiyonel)
     
     public int CreatedByEmployeeId { get; set; }                // İşi oluşturan personel ID'si
