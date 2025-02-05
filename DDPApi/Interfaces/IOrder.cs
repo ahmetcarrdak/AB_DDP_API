@@ -29,7 +29,7 @@ namespace DDPApi.Interfaces
         Task<IEnumerable<OrderDto>> GetOrdersByCustomerIdAsync(int customerId);
         
         // Belirli bir ürünün istasyon bilgilerini getirir
-        Task<OrderStationDto> GetOrderStationAsync(int orderId);
+        Task<List<OrderStationDto>> GetOrderStationAsync();
 
         // Belirli bir tarih aralığındaki siparişleri getirir
         Task<IEnumerable<OrderDto>> GetOrdersByDateRangeAsync(DateTime startDate, DateTime endDate);

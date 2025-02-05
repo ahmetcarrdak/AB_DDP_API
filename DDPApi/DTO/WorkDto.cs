@@ -31,3 +31,12 @@ public class WorkDto
     public bool HasSafetyRisks { get; set; }                    // Güvenlik riski var mı?
     public string? SafetyNotes { get; set; }                    // Güvenlik notları
 }
+
+public class WorkStationDto
+{
+    public int? StationId { get; set; }                    
+    public int StagesId { get; set; }
+    public int WorkId { get; set; }                             // İş benzersiz kimlik numarası
+    public string WorkName { get; set; }                        // İş/görev adı
+    public string Description { get; set; }      
+}

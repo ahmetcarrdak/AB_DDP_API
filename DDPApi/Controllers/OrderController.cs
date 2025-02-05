@@ -82,11 +82,11 @@ namespace DDPApi.Controllers
             return Ok(orders);
         }
 
-        // GET: api/OrderStation/{orderId}
-        [HttpGet("StationInfo/{orderId}")]
-        public async Task<ActionResult<OrderStationDto>> GetOrderStation(int orderId)
+        // GET: api/OrderStation/
+        [HttpGet("StationInfo")]
+        public async Task<ActionResult<OrderStationDto>> GetOrderStation()
         {
-            var orderStation = await _orderService.GetOrderStationAsync(orderId);
+            var orderStation = await _orderService.GetOrderStationAsync();
             if (orderStation == null)
                 return NotFound();
 

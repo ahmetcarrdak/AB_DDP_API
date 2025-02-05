@@ -63,6 +63,17 @@ namespace DDPApi.Controllers
                 return NotFound();
             return NoContent();
         }
+        
+        // GET: api/Work/StationInfo
+        [HttpGet("StationInfo")]
+        public async Task<ActionResult<WorkStationDto>> GetWorkStation()
+        {
+            var workStation = await _workService.GetWorkStationAsync();
+            if (workStation == null)
+                return NotFound();
+
+            return Ok(workStation);
+        }
 
         // DELETE: api/Work/{id}
         [HttpDelete("{id}")]

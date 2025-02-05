@@ -166,10 +166,9 @@ namespace DDPApi.Services
         }
 
         // Belirli bir siparişin istasyon bilgilerini getirir
-        public async Task<OrderStationDto> GetOrderStationAsync(int orderId)
+        public async Task<List<OrderStationDto>> GetOrderStationAsync()
         {
-            var order = await _context.Orders
-                .Where(o => o.OrderId == orderId)
+            return await _context.Orders
                 .Select(o => new OrderStationDto
                 {
                     StationId = o.StationId,
@@ -184,9 +183,7 @@ namespace DDPApi.Services
                     EstimatedDeliveryDate = o.EstimatedDeliveryDate,
                     ActualDeliveryDate = o.ActualDeliveryDate
                 })
-                .FirstOrDefaultAsync();
-
-            return order;
+                .ToListAsync();
         }
         
         // Belirli bir tarih aralığındaki siparişleri getirir

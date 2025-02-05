@@ -16,6 +16,9 @@ namespace DDPApi.Interfaces
 
         // ID'ye göre iş getirir
         Task<WorkDto> GetWorkByIdAsync(int id);
+        
+        // Belirli bir ürünün istasyon bilgilerini getirir
+        Task<List<WorkStationDto>> GetWorkStationAsync();
 
         // Yeni iş ekler
         Task<bool> AddWorkAsync(WorkDto workDto);

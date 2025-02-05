@@ -40,6 +40,21 @@ namespace DDPApi.Services
             var work = await _context.Works.FindAsync(id);
             return work != null ? MapToDto(work) : null;
         }
+        
+        // İstasyon bilgilerini getirir
+        public async Task<List<WorkStationDto>> GetWorkStationAsync()
+        {
+            return await _context.Works
+                .Select(ws => new WorkStationDto
+                {
+                    StationId = ws.StationId,
+                    StagesId = ws.StagesId,
+                    WorkId = ws.WorkId,
+                    WorkName = ws.WorkName,
+                    Description = ws.Description,
+                })
+               .ToListAsync();
+        }
 
         // Yeni iş ekler
         public async Task<bool> AddWorkAsync(WorkDto workDto)
