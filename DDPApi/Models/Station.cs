@@ -5,13 +5,12 @@ namespace DDPApi.Models
 {
     public class Station
     {
-        [Key]
-        public int StationId { get; set; }
+        [Key] public int StationId { get; set; }
 
         // İstasyonun adı
         public string Name { get; set; }
 
-        // İstasyonun tipi (1: Sipariş İstasyonu, 2: İş İstasyonu)
+        // İstasyonun tipi (1: Sipariş İstasyonu, 2: İş İstasyonu, 3: hem iş hem sipariş)
         public int StationType { get; set; }
 
         // İstasyonun açıklaması

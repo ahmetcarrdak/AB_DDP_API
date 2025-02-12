@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DDPApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ea2e5c4249fff0363bbe73178046138177f46b5b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9ad56f7d8fc49824f8817cb9b978d4008bea956d")]
 [assembly: System.Reflection.AssemblyProductAttribute("DDPApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DDPApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
