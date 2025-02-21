@@ -63,7 +63,7 @@ namespace DDPApi.Controllers
                 return NotFound();
             return NoContent();
         }
-        
+
         // GET: api/Work/StationInfo
         [HttpGet("StationInfo")]
         public async Task<ActionResult<WorkStationDto>> GetWorkStation()
@@ -85,14 +85,6 @@ namespace DDPApi.Controllers
             return NoContent();
         }
 
-        // GET: api/Work/department/{departmentId}
-        [HttpGet("department/{departmentId}")]
-        public async Task<ActionResult<IEnumerable<WorkDto>>> GetWorksByDepartment(int departmentId)
-        {
-            var works = await _workService.GetWorksByDepartmentIdAsync(departmentId);
-            return Ok(works);
-        }
-
         // GET: api/Work/employee/{employeeId}
         [HttpGet("employee/{employeeId}")]
         public async Task<ActionResult<IEnumerable<WorkDto>>> GetWorksByEmployee(int employeeId)
@@ -111,7 +103,7 @@ namespace DDPApi.Controllers
 
         // GET: api/Work/status/{status}
         [HttpGet("status/{status}")]
-        public async Task<ActionResult<IEnumerable<WorkDto>>> GetWorksByStatus(string status)
+        public async Task<ActionResult<IEnumerable<WorkDto>>> GetWorksByStatus(int status)
         {
             var works = await _workService.GetWorksByStatusAsync(status);
             return Ok(works);

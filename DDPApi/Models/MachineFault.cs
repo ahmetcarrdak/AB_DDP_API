@@ -8,10 +8,10 @@ namespace DDPApi.Models
         [Key] public int FaultId { get; set; }
         // Arıza kaydı için benzersiz bir kimlik numarası.
 
-        [Required] [MaxLength(100)] public int MachineId { get; set; }
+        [Required] public int MachineId { get; set; }
         // Arızaya neden olan makinenin adı.
 
-        [Required] [MaxLength(50)] public string MachineCode { get; set; }
+        [Required][MaxLength(50)] public string MachineCode { get; set; }
         // Makineye ait benzersiz kod (örn. seri numarası veya envanter numarası).
 
         [Required] public DateTime FaultStartDate { get; set; }
@@ -20,7 +20,7 @@ namespace DDPApi.Models
         public DateTime? FaultEndDate { get; set; }
         // Arızanın bitiş tarihi ve saati. (Opsiyonel: Henüz çözülmeyen arızalar için null olabilir.)
 
-        [Required] [MaxLength(200)] public string FaultDescription { get; set; }
+        [Required][MaxLength(200)] public string FaultDescription { get; set; }
         // Arızanın kısa açıklaması.
 
         [MaxLength(200)] public string Cause { get; set; }
@@ -41,10 +41,15 @@ namespace DDPApi.Models
         [Required] public bool IsResolved { get; set; }
         // Arızanın çözülüp çözülmediğini belirten alan (true: çözülmüş, false: çözülmemiş).
 
+        // Makinenin ne kadar arızalandığını tutar
+        public int TotalFault { get; set; } = 0;
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         // Arıza kaydının oluşturulma tarihi.
 
         public DateTime? UpdatedAt { get; set; }
         // Arıza kaydının güncellenme tarihi (opsiyonel).
+
+        public Machine? Machine { get; set; }
     }
 }

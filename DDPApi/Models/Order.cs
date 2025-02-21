@@ -43,8 +43,7 @@ public class Order
     [NotMapped] // Hesaplanabilir alan, veritabanında saklanmaz
     public decimal TotalAmount => Quantity * UnitPrice;          // Toplam tutar (hesaplanabilir)
 
-    [StringLength(50)]
-    public string? OrderStatus { get; set; }                     // Sipariş durumu (opsiyonel)
+    public int? OrderStatus { get; set; } = 1;                     // Sipariş durumu (opsiyonel)
 
     public DateTime? EstimatedDeliveryDate { get; set; }         // Tahmini teslimat tarihi
 

@@ -30,5 +30,7 @@ namespace DDPApi.Interfaces
         Task<bool> UpdateQualityCheckStatusAsync(int id, bool requiresQualityCheck);  // Kalite kontrol durumunu günceller
 
         Task<List<Station>> GetStationsByResponsiblePersonAsync(int responsiblePersonId);  // Sorumlu kişiye göre istasyonları listeler
+
+        Task<IEnumerable<object>> GetTopStationsWithMostPendingJobsAndStagesAsync(); // Yığılmaları gösterir
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using DDPApi.Data;
 using DDPApi.Services;
 using DDPApi.Interfaces;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 

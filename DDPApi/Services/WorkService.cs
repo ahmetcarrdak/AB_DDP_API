@@ -19,29 +19,25 @@ namespace DDPApi.Services
             _context = context;
         }
 
-        // Tüm işleri getirir
         public async Task<IEnumerable<Work>> GetAllWorksAsync()
         {
             return await _context.Works.AsNoTracking().ToListAsync();
         }
 
-        // Aktif işleri getirir
         public async Task<IEnumerable<WorkDto>> GetActiveWorksAsync()
         {
             return await _context.Works
-                .Where(w => w.IsActive)
+                .Where(w => w.IsActive ?? false)
                 .Select(w => MapToDto(w))
                 .ToListAsync();
         }
 
-        // ID'ye göre iş getirir
         public async Task<WorkDto> GetWorkByIdAsync(int id)
         {
             var work = await _context.Works.FindAsync(id);
             return work != null ? MapToDto(work) : null;
         }
-        
-        // İstasyon bilgilerini getirir
+
         public async Task<List<WorkStationDto>> GetWorkStationAsync()
         {
             return await _context.Works
@@ -51,28 +47,67 @@ namespace DDPApi.Services
                     StagesId = ws.StagesId,
                     WorkId = ws.WorkId,
                     WorkName = ws.WorkName,
-                    Description = ws.Description,
+                    Description = ws.Description
                 })
                .ToListAsync();
         }
 
-        // Yeni iş ekler
         public async Task<bool> AddWorkAsync(WorkDto workDto)
         {
             try
             {
-                var work = MapToModel(workDto);
-                _context.Works.Add(work);
+                var work = new Work
+                {
+                    // Gönderilen alanları alıyoruz
+                    WorkName = workDto.WorkName,
+                    Priority = workDto.Priority,
+                    AssignedEmployeeId = workDto.AssignedEmployeeId,
+                    RequiredEquipment = workDto.RequiredEquipment,
+                    RequiredMaterials = workDto.RequiredMaterials,
+                    IsRecurring = workDto.IsRecurring ?? false,  // Varsayılan değer false
+                    RecurrencePattern = workDto.RecurrencePattern,
+                    Notes = workDto.Notes,
+                    HasSafetyRisks = workDto.HasSafetyRisks ?? false,  // Varsayılan değer false
+                    Description = workDto.Description ?? "Belirtilmemiş",
+
+                    // Diğer alanları eksik bırakıyoruz ya da kendi değerlerimizi atıyoruz
+                    Barcode = GenerateBarcode(),  // Otomatik olarak barcode oluşturuluyor
+                    StartDate = null,  // Başlangıç tarihi boş
+                    DueDate = null,  // Teslim tarihi boş
+                    CompletionDate = null,  // Tamamlama tarihi boş
+                    Location = null,  // Lokasyon boş
+                    EstimatedCost = 0,  // Tahmini maliyet 0
+                    ActualCost = 0,  // Gerçekleşen maliyet 0
+                    EstimatedDuration = 0,  // Tahmini süre 0
+                    ActualDuration = 0,  // Gerçekleşen süre 0
+                    RequiresApproval = false,  // Onay gerektirmiyor
+                    IsActive = true,  // İş aktif
+                    CancellationReason = null,  // İptal nedeni boş
+                    CancellationDate = null,  // İptal tarihi boş
+                    QualityScore = 0,  // Kalite puanı 0
+                    QualityNotes = null,  // Kalite notları boş
+                    SafetyNotes = null,  // Güvenlik notları boş
+                    Status = 1
+
+                };
+
+                await _context.Works.AddAsync(work);
                 await _context.SaveChangesAsync();
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"AddWorkAsync Error: {ex.Message}");
                 return false;
             }
         }
 
-        // İş bilgilerini günceller
+
+        private string GenerateBarcode()
+        {
+            return $"BC-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
+        }
+
         public async Task<bool> UpdateWorkAsync(WorkDto workDto)
         {
             var existingWork = await _context.Works.FindAsync(workDto.WorkId);
@@ -83,7 +118,6 @@ namespace DDPApi.Services
 
             try
             {
-                // Mevcut işin alanlarını DTO'dan güncelle
                 existingWork.WorkName = workDto.WorkName;
                 existingWork.Description = workDto.Description;
                 existingWork.Status = workDto.Status;
@@ -92,35 +126,35 @@ namespace DDPApi.Services
                 existingWork.DueDate = workDto.DueDate;
                 existingWork.CompletionDate = workDto.CompletionDate;
                 existingWork.Location = workDto.Location;
-                existingWork.EstimatedCost = workDto.EstimatedCost;
-                existingWork.ActualCost = workDto.ActualCost;
-                existingWork.EstimatedDuration = workDto.EstimatedDuration;
-                existingWork.ActualDuration = workDto.ActualDuration;
+                existingWork.EstimatedCost = workDto.EstimatedCost ?? 0;
+                existingWork.ActualCost = workDto.ActualCost ?? 0;
+                existingWork.EstimatedDuration = workDto.EstimatedDuration ?? 0;
+                existingWork.ActualDuration = workDto.ActualDuration ?? 0;
                 existingWork.RequiredEquipment = workDto.RequiredEquipment;
                 existingWork.RequiredMaterials = workDto.RequiredMaterials;
-                existingWork.IsRecurring = workDto.IsRecurring;
+                existingWork.IsRecurring = workDto.IsRecurring ?? false;
                 existingWork.RecurrencePattern = workDto.RecurrencePattern;
-                existingWork.RequiresApproval = workDto.RequiresApproval;
+                existingWork.RequiresApproval = workDto.RequiresApproval ?? false;
                 existingWork.Notes = workDto.Notes;
-                existingWork.IsActive = workDto.IsActive;
+                existingWork.IsActive = workDto.IsActive ?? false;
                 existingWork.CancellationReason = workDto.CancellationReason;
                 existingWork.CancellationDate = workDto.CancellationDate;
-                existingWork.QualityScore = workDto.QualityScore;
+                existingWork.QualityScore = workDto.QualityScore ?? 0;
                 existingWork.QualityNotes = workDto.QualityNotes;
-                existingWork.HasSafetyRisks = workDto.HasSafetyRisks;
+                existingWork.HasSafetyRisks = workDto.HasSafetyRisks ?? false;
                 existingWork.SafetyNotes = workDto.SafetyNotes;
 
                 _context.Works.Update(existingWork);
                 await _context.SaveChangesAsync();
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"UpdateWorkAsync Error: {ex.Message}");
                 return false;
             }
         }
 
-        // İş siler
         public async Task<bool> DeleteWorkAsync(int id)
         {
             var work = await _context.Works.FindAsync(id);
@@ -133,18 +167,11 @@ namespace DDPApi.Services
                 await _context.SaveChangesAsync();
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"DeleteWorkAsync Error: {ex.Message}");
                 return false;
             }
-        }
-
-        // Diğer filtreleme metodları DTO dönüşümü ile güncellendi
-        public async Task<IEnumerable<WorkDto>> GetWorksByDepartmentIdAsync(int departmentId)
-        {
-            return await _context.Works
-                .Select(w => MapToDto(w))
-                .ToListAsync();
         }
 
         public async Task<IEnumerable<WorkDto>> GetWorksByEmployeeIdAsync(int employeeId)
@@ -163,7 +190,7 @@ namespace DDPApi.Services
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<WorkDto>> GetWorksByStatusAsync(string status)
+        public async Task<IEnumerable<WorkDto>> GetWorksByStatusAsync(int status)
         {
             return await _context.Works
                 .Where(w => w.Status == status)
@@ -179,62 +206,54 @@ namespace DDPApi.Services
                 .ToListAsync();
         }
 
-        // İptal edilmiş işleri getirir
+        public async Task<IEnumerable<WorkDto>> GetDelayedWorksAsync()
+        {
+            return await _context.Works
+                .Where(w => w.DueDate < DateTime.Now && (w.CompletionDate == null || w.CompletionDate > w.DueDate))
+                .Select(w => MapToDto(w))
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<WorkDto>> GetCancelledWorksAsync()
         {
             return await _context.Works
-                .Where(w => !string.IsNullOrEmpty(w.CancellationReason))
+                .Where(w => w.CancellationDate != null)
                 .Select(w => MapToDto(w))
                 .ToListAsync();
         }
 
-        // Gecikmiş işleri getirir
-        public async Task<IEnumerable<WorkDto>> GetDelayedWorksAsync()
-        {
-            var currentDate = DateTime.Now;
-            return await _context.Works
-                .Where(w => w.DueDate < currentDate && w.CompletionDate == null)
-                .Select(w => MapToDto(w))
-                .ToListAsync();
-        }
-
-        // Onay bekleyen işleri getirir
-        public async Task<IEnumerable<WorkDto>> GetPendingApprovalWorksAsync()
-        {
-            return await _context.Works
-                .Where(w => w.RequiresApproval && w.ApprovedByEmployeeId == null)
-                .Select(w => MapToDto(w))
-                .ToListAsync();
-        }
-
-        // Periyodik işleri getirir
         public async Task<IEnumerable<WorkDto>> GetRecurringWorksAsync()
         {
             return await _context.Works
-                .Where(w => w.IsRecurring)
+                .Where(w => w.IsRecurring == true)
                 .Select(w => MapToDto(w))
                 .ToListAsync();
         }
 
-        // Güvenlik riski olan işleri getirir
+        public async Task<IEnumerable<WorkDto>> GetPendingApprovalWorksAsync()
+        {
+            return await _context.Works
+                .Where(w => w.RequiresApproval == true && w.Status == 1)
+                .Select(w => MapToDto(w))
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<WorkDto>> GetSafetyRiskWorksAsync()
         {
             return await _context.Works
-                .Where(w => w.HasSafetyRisks)
+                .Where(w => w.HasSafetyRisks == true)
                 .Select(w => MapToDto(w))
                 .ToListAsync();
         }
 
-        // Kalite puanına göre işleri getirir
         public async Task<IEnumerable<WorkDto>> GetWorksByQualityScoreAsync(int minScore)
         {
             return await _context.Works
-                .Where(w => w.QualityScore >= minScore)
+                .Where(w => (w.QualityScore ?? 0) >= minScore)
                 .Select(w => MapToDto(w))
                 .ToListAsync();
         }
 
-        // Yardımcı metotlar: DTO ile Model arasında dönüşüm
         private WorkDto MapToDto(Work work)
         {
             return new WorkDto
@@ -248,23 +267,24 @@ namespace DDPApi.Services
                 DueDate = work.DueDate,
                 CompletionDate = work.CompletionDate,
                 Location = work.Location,
-                EstimatedCost = work.EstimatedCost,
-                ActualCost = work.ActualCost,
-                EstimatedDuration = work.EstimatedDuration,
-                ActualDuration = work.ActualDuration,
+                EstimatedCost = work.EstimatedCost ?? 0,
+                ActualCost = work.ActualCost ?? 0,
+                EstimatedDuration = work.EstimatedDuration ?? 0,
+                ActualDuration = work.ActualDuration ?? 0,
                 RequiredEquipment = work.RequiredEquipment,
                 RequiredMaterials = work.RequiredMaterials,
-                IsRecurring = work.IsRecurring,
+                IsRecurring = work.IsRecurring ?? false,
                 RecurrencePattern = work.RecurrencePattern,
-                RequiresApproval = work.RequiresApproval,
+                RequiresApproval = work.RequiresApproval ?? false,
                 Notes = work.Notes,
-                IsActive = work.IsActive,
+                IsActive = work.IsActive ?? false,
                 CancellationReason = work.CancellationReason,
                 CancellationDate = work.CancellationDate,
-                QualityScore = work.QualityScore,
+                QualityScore = work.QualityScore ?? 0,
                 QualityNotes = work.QualityNotes,
-                HasSafetyRisks = work.HasSafetyRisks,
-                SafetyNotes = work.SafetyNotes
+                HasSafetyRisks = work.HasSafetyRisks ?? false,
+                SafetyNotes = work.SafetyNotes,
+                Barcode = work.Barcode
             };
         }
 
@@ -281,23 +301,24 @@ namespace DDPApi.Services
                 DueDate = workDto.DueDate,
                 CompletionDate = workDto.CompletionDate,
                 Location = workDto.Location,
-                EstimatedCost = workDto.EstimatedCost,
-                ActualCost = workDto.ActualCost,
-                EstimatedDuration = workDto.EstimatedDuration,
-                ActualDuration = workDto.ActualDuration,
+                EstimatedCost = workDto.EstimatedCost ?? 0,
+                ActualCost = workDto.ActualCost ?? 0,
+                EstimatedDuration = workDto.EstimatedDuration ?? 0,
+                ActualDuration = workDto.ActualDuration ?? 0,
                 RequiredEquipment = workDto.RequiredEquipment,
                 RequiredMaterials = workDto.RequiredMaterials,
-                IsRecurring = workDto.IsRecurring,
+                IsRecurring = workDto.IsRecurring ?? false,
                 RecurrencePattern = workDto.RecurrencePattern,
-                RequiresApproval = workDto.RequiresApproval,
+                RequiresApproval = workDto.RequiresApproval ?? false,
                 Notes = workDto.Notes,
-                IsActive = workDto.IsActive,
+                IsActive = workDto.IsActive ?? false,
                 CancellationReason = workDto.CancellationReason,
                 CancellationDate = workDto.CancellationDate,
-                QualityScore = workDto.QualityScore,
+                QualityScore = workDto.QualityScore ?? 0,
                 QualityNotes = workDto.QualityNotes,
-                HasSafetyRisks = workDto.HasSafetyRisks,
-                SafetyNotes = workDto.SafetyNotes
+                HasSafetyRisks = workDto.HasSafetyRisks ?? false,
+                SafetyNotes = workDto.SafetyNotes,
+                Barcode = workDto.Barcode
             };
         }
     }

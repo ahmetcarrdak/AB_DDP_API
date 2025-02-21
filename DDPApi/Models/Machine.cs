@@ -1,13 +1,14 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
+using DDPApi.Models;
 
 namespace DDPApi.Models
 {
     public class Machine
     {
         [Key]
-        public int MachineId { get; set; } 
+        public int MachineId { get; set; }
         // Makine kaydı için benzersiz bir kimlik numarası.
 
         [Required]
@@ -33,6 +34,9 @@ namespace DDPApi.Models
         public string Model { get; set; }
         // Makinenin modeli (örn. ABC123).
 
+        // Makinenin ne kadar arızalandığını tutar
+        public int TotalFault { get; set; } = 0;
+
         [Required]
         public DateTime PurchaseDate { get; set; }
         // Makinenin satın alındığı tarih.
@@ -46,8 +50,5 @@ namespace DDPApi.Models
 
         public DateTime? UpdatedAt { get; set; }
         // Kaydın en son güncellenme tarihi (opsiyonel).
-
-        public virtual ICollection<MachineFault> Faults { get; set; }
-        // Makinenin geçmişteki arızalarını tutan koleksiyon.
     }
 }

@@ -18,7 +18,7 @@ namespace DDPApi.Controllers
         }
 
         // Yeni bir kalite kontrol kaydı ekler
-        [HttpPost]
+        [HttpPost("Create")]
         public async Task<ActionResult<QualityControlRecord>> AddQualityControlRecordAsync([FromBody] QualityControlRecord qualityControlRecord)
         {
             if (qualityControlRecord == null)
@@ -27,7 +27,7 @@ namespace DDPApi.Controllers
             }
 
             var addedRecord = await _qualityControlRecordService.AddQualityControlRecordAsync(qualityControlRecord);
-            return CreatedAtAction(nameof(GetQualityControlRecordByIdAsync), new { id = addedRecord.QualityControlRecordId }, addedRecord);
+            return Ok(addedRecord);
         }
 
         // Var olan kalite kontrol kaydını günceller
@@ -75,7 +75,7 @@ namespace DDPApi.Controllers
         }
 
         // Tüm kalite kontrol kayıtlarını getirir
-        [HttpGet]
+        [HttpGet("GetAll")]
         public async Task<ActionResult<IEnumerable<QualityControlRecord>>> GetAllQualityControlRecordsAsync()
         {
             var records = await _qualityControlRecordService.GetAllQualityControlRecordsAsync();

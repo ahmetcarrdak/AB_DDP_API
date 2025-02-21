@@ -3,6 +3,7 @@ using System;
 using DDPApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DDPApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250217193914_AddTotalFaultToMachine")]
+    partial class AddTotalFaultToMachine
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -190,6 +193,7 @@ namespace DDPApi.Migrations
                         .HasColumnType("character varying(50)");
 
                     b.Property<int>("MachineId")
+                        .HasMaxLength(100)
                         .HasColumnType("integer");
 
                     b.Property<string>("ReportedBy")
@@ -665,9 +669,9 @@ namespace DDPApi.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<int?>("OrderStatus")
+                    b.Property<string>("OrderStatus")
                         .HasMaxLength(50)
-                        .HasColumnType("integer");
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("PaymentMethod")
                         .HasMaxLength(50)
@@ -837,9 +841,6 @@ namespace DDPApi.Migrations
                     b.Property<int?>("AssignedEmployeeId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Barcode")
-                        .HasColumnType("text");
-
                     b.Property<DateTime?>("CancellationDate")
                         .HasColumnType("timestamp with time zone");
 
@@ -850,7 +851,7 @@ namespace DDPApi.Migrations
                     b.Property<DateTime?>("CompletionDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("CreatedByEmployeeId")
+                    b.Property<int>("CreatedByEmployeeId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedDate")
@@ -870,13 +871,13 @@ namespace DDPApi.Migrations
                     b.Property<int?>("EstimatedDuration")
                         .HasColumnType("integer");
 
-                    b.Property<bool?>("HasSafetyRisks")
+                    b.Property<bool>("HasSafetyRisks")
                         .HasColumnType("boolean");
 
-                    b.Property<bool?>("IsActive")
+                    b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<bool?>("IsRecurring")
+                    b.Property<bool>("IsRecurring")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Location")
@@ -911,7 +912,7 @@ namespace DDPApi.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<bool?>("RequiresApproval")
+                    b.Property<bool>("RequiresApproval")
                         .HasColumnType("boolean");
 
                     b.Property<string>("SafetyNotes")
@@ -924,12 +925,13 @@ namespace DDPApi.Migrations
                     b.Property<DateTime?>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("StationId")
+                    b.Property<int?>("StationId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Status")
+                    b.Property<string>("Status")
+                        .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("integer");
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("WorkName")
                         .IsRequired()
@@ -951,13 +953,11 @@ namespace DDPApi.Migrations
 
             modelBuilder.Entity("DDPApi.Models.MachineFault", b =>
                 {
-                    b.HasOne("DDPApi.Models.Machine", "Machine")
-                        .WithMany()
+                    b.HasOne("DDPApi.Models.Machine", null)
+                        .WithMany("Faults")
                         .HasForeignKey("MachineId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Machine");
                 });
 
             modelBuilder.Entity("DDPApi.Models.SupplierProduct", b =>
@@ -1007,13 +1007,16 @@ namespace DDPApi.Migrations
 
                     b.HasOne("DDPApi.Models.Station", "Station")
                         .WithMany()
-                        .HasForeignKey("StationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("StationId");
 
                     b.Navigation("Stages");
 
                     b.Navigation("Station");
+                });
+
+            modelBuilder.Entity("DDPApi.Models.Machine", b =>
+                {
+                    b.Navigation("Faults");
                 });
 
             modelBuilder.Entity("DDPApi.Models.Supplier", b =>

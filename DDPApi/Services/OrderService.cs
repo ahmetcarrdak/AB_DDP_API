@@ -185,7 +185,7 @@ namespace DDPApi.Services
                 })
                 .ToListAsync();
         }
-        
+
         // Belirli bir tarih aralığındaki siparişleri getirir
         public async Task<IEnumerable<OrderDto>> GetOrdersByDateRangeAsync(DateTime startDate, DateTime endDate)
         {
@@ -196,11 +196,30 @@ namespace DDPApi.Services
         }
 
         // Belirli bir duruma sahip siparişleri getirir
-        public async Task<IEnumerable<OrderDto>> GetOrdersByStatusAsync(string status)
+        public async Task<IEnumerable<OrderDto>> GetOrdersByStatusAsync(int status)
         {
             var orders = await _context.Orders.Where(o => o.OrderStatus == status).ToListAsync();
             return orders.Select(MapToDto);
         }
+
+        // tüm siparişlerin durumlarını ve sayılarını getirir 
+        public async Task<IEnumerable<object>> GetOrderStatusesAsync()
+        {
+            var orderStatuses = await _context.Orders
+                .GroupBy(o => o.OrderStatus)
+                .Select(g => new
+                {
+                    StatusName = g.Key == 1 ? "Bekleyen" :
+                                 g.Key == 2 ? "Devam Eden" :
+                                 g.Key == 3 ? "Biten" :
+                                 "Bilinmeyen",  // Alternatif olarak if-else
+                    Count = g.Count() // Her durum için sipariş sayısını alıyoruz
+                })
+                .ToListAsync();
+
+            return orderStatuses;
+        }
+
 
         // Ödenmemiş siparişleri getirir
         public async Task<IEnumerable<OrderDto>> GetUnpaidOrdersAsync()
@@ -253,5 +272,37 @@ namespace DDPApi.Services
             var orders = await _context.Orders.Where(o => !string.IsNullOrEmpty(o.CancellationReason)).ToListAsync();
             return orders.Select(MapToDto);
         }
+
+        // id'ye göre sipariş durumunu günceller
+        public async Task<bool> UpdateOrderStatusAsync(int orderId)
+        {
+            try
+            {
+                // Order'ı DB'den bul
+                var order = await _context.Orders.FindAsync(orderId);
+
+                if (order == null)
+                {
+                    // Order bulunamazsa false döndür
+                    return false;
+                }
+
+                // OrderStatus null ise 0'dan başlat, değilse 1 artır
+                order.OrderStatus = (order.OrderStatus ?? 0) + 1;
+
+                // Değişiklikleri kaydet
+                _context.Orders.Update(order);
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Log hatası burada kaydedebilirsin
+                Console.WriteLine($"Hata: {ex.Message}");
+                return false;
+            }
+        }
+
     }
 }

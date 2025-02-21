@@ -112,4 +112,34 @@ public class MachineFaultController : ControllerBase
 
         return StatusCode(500, new { Message = "An error occurred while deleting the fault." });
     }
+
+    // Toplam arıza sayısını getirir
+    [HttpGet("totalFault")]
+    public async Task<ActionResult<int>> GetTotalFaults()
+    {
+        var totalFaults = await _machineFaultService.GetAllFaultsAsync();
+        return Ok(totalFaults);
+    }
+
+    // En çok arıza yapan 5 makina
+    [HttpGet("TotalFault5")]
+    public async Task<ActionResult<Machine>> GetTotal5Fault()
+    {
+        var total5Faults = await _machineFaultService.GetTop5MachinesWithMostFaultsAsync();
+        return Ok(total5Faults);
+    }
+
+    // En son 5 arıza kaydı yapılan makineleri getirir
+    [HttpGet("latest-faults")]
+    public async Task<IActionResult> GetLatest5FaultMachines()
+    {
+        var machines = await _machineFaultService.GetLatest5FaultMachinesAsync();
+        
+        if (machines == null || !machines.Any())
+        {
+            return NotFound("Son arızalara sahip makineler bulunamadı.");
+        }
+
+        return Ok(machines);
+    }
 }

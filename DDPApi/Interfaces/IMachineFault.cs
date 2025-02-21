@@ -30,4 +30,13 @@ public interface IMachineFault
 
     // Makine koduna göre arıza kayıtlarını getirir.
     Task<IEnumerable<MachineFault>> GetFaultsByMachineCodeAsync(string machineCode);
+
+   // İlgili makinedeki toplam arıza sayısını getirir
+    Task<int> GetTotalFaultCountByMachineIdAsync(int machineId);
+
+    // En çok arıza yapan 5 makineyi getirir
+    Task<List<Machine>> GetTop5MachinesWithMostFaultsAsync();
+
+    // En son 5 arıza kaydı yapılan makineleri getirir
+    Task<List<Machine>> GetLatest5FaultMachinesAsync();
 }

@@ -29,9 +29,6 @@ namespace DDPApi.Interfaces
         // İş siler
         Task<bool> DeleteWorkAsync(int id);
 
-        // Belirli bir departmana ait işleri getirir
-        Task<IEnumerable<WorkDto>> GetWorksByDepartmentIdAsync(int departmentId);
-
         // Belirli bir personele atanmış işleri getirir
         Task<IEnumerable<WorkDto>> GetWorksByEmployeeIdAsync(int employeeId);
 
@@ -39,7 +36,7 @@ namespace DDPApi.Interfaces
         Task<IEnumerable<WorkDto>> GetWorksByPriorityAsync(string priority);
 
         // İş durumuna göre işleri getirir
-        Task<IEnumerable<WorkDto>> GetWorksByStatusAsync(string status);
+        Task<IEnumerable<WorkDto>> GetWorksByStatusAsync(int status);
 
         // Belirli bir tarih aralığındaki işleri getirir
         Task<IEnumerable<WorkDto>> GetWorksByDateRangeAsync(DateTime startDate, DateTime endDate);

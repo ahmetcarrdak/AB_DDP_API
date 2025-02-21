@@ -111,5 +111,23 @@ namespace DDPApi.Controllers
             var stations = await _stationService.GetStationsByResponsiblePersonAsync(responsiblePersonId);
             return Ok(stations);
         }
+
+        [HttpGet("top-pending-stations")]
+        public async Task<IActionResult> GetTopStationsWithMostPendingJobsAndStages()
+        {
+            try
+            {
+                // Servis metodunu çağırıyoruz
+                var topStations = await _stationService.GetTopStationsWithMostPendingJobsAndStagesAsync();
+
+                // Sonuç başarılı ise 200 dönüyoruz
+                return Ok(topStations);
+            }
+            catch (System.Exception ex)
+            {
+                // Eğer bir hata oluşursa, hata mesajıyla birlikte 500 dönüyoruz
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
     }
 }

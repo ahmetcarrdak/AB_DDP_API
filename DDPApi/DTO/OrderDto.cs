@@ -10,15 +10,15 @@ namespace DDPApi.DTO
 
         [Required] public DateTime OrderDate { get; set; } // Sipariş tarihi
 
-        [Required] [StringLength(100)] public string CustomerName { get; set; } // Müşteri adı/firma adı
+        [Required][StringLength(100)] public string CustomerName { get; set; } // Müşteri adı/firma adı
 
-        [Required] [StringLength(200)] public string DeliveryAddress { get; set; } // Teslimat adresi
+        [Required][StringLength(200)] public string DeliveryAddress { get; set; } // Teslimat adresi
 
         [StringLength(15)] public string? CustomerPhone { get; set; } // Telefon numarası (opsiyonel)
 
-        [EmailAddress] [StringLength(100)] public string? CustomerEmail { get; set; } // E-posta adresi (opsiyonel)
+        [EmailAddress][StringLength(100)] public string? CustomerEmail { get; set; } // E-posta adresi (opsiyonel)
 
-        [Required] [StringLength(50)] public string ProductName { get; set; } // Ürün adı
+        [Required][StringLength(50)] public string ProductName { get; set; } // Ürün adı
 
         [Required] public int Quantity { get; set; } // Miktar
 
@@ -26,7 +26,7 @@ namespace DDPApi.DTO
         [Range(0, (double)decimal.MaxValue)]
         public decimal UnitPrice { get; set; } // Birim fiyat
 
-        [StringLength(50)] public string? OrderStatus { get; set; } // Sipariş durumu (opsiyonel)
+        public int? OrderStatus { get; set; } = 1; // Sipariş durumu (opsiyonel)
 
         public DateTime? EstimatedDeliveryDate { get; set; } // Tahmini teslimat tarihi
 
@@ -57,8 +57,8 @@ namespace DDPApi.DTO
         public decimal? TaxAmount { get; set; } // Vergi tutarı (opsiyonel)
 
         [StringLength(50)] public string? InvoiceNumber { get; set; } // Fatura numarası (opsiyonel)
-        
-        public ToPersons ToPersons { get; set; }
+
+        public ToPersons? ToPersons { get; set; }
     }
 
     public class OrderStationDto

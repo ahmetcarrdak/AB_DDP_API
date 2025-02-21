@@ -111,5 +111,32 @@ namespace DDPApi.Services
                 .Where(s => s.ResponsiblePersonId == responsiblePersonId)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<object>> GetTopStationsWithMostPendingJobsAndStagesAsync()
+        {
+            var stationStats = await _context.Stations
+                .Select(s => new
+                {
+                    Station = s,
+                    PendingOrders = _context.Orders.Count(o => o.StationId == s.StationId),
+                    PendingWorks = _context.Works.Count(w => w.StationId == s.StationId),
+                    TotalPending = _context.Orders.Count(o => o.StationId == s.StationId) + 
+                                 _context.Works.Count(w => w.StationId == s.StationId)
+                })
+                .OrderByDescending(x => x.TotalPending)
+                .Take(5)
+                .Select(x => new
+                {
+                    StationId = x.Station.StationId,
+                    StationName = x.Station.Name,
+                    PendingOrders = x.PendingOrders,
+                    PendingWorks = x.PendingWorks,
+                    TotalPendingItems = x.TotalPending
+                })
+                .ToListAsync();
+
+            return stationStats;
+        }
+
     }
 }

@@ -35,7 +35,10 @@ namespace DDPApi.Interfaces
         Task<IEnumerable<OrderDto>> GetOrdersByDateRangeAsync(DateTime startDate, DateTime endDate);
 
         // Belirli bir duruma sahip siparişleri getirir (Beklemede, Üretimde, Tamamlandı vb.)
-        Task<IEnumerable<OrderDto>> GetOrdersByStatusAsync(string status);
+        Task<IEnumerable<OrderDto>> GetOrdersByStatusAsync(int status);
+
+        // Tüm siparişlerin durumlarını ve adetlerini getirir
+        Task<IEnumerable<object>> GetOrderStatusesAsync();
 
         // Ödenmemiş siparişleri getirir
         Task<IEnumerable<OrderDto>> GetUnpaidOrdersAsync();
@@ -57,5 +60,8 @@ namespace DDPApi.Interfaces
 
         // İptal edilen siparişleri getirir
         Task<IEnumerable<OrderDto>> GetCancelledOrdersAsync();
+
+        // id'ye göre sipariş durumunu günceller 
+        Task<bool> UpdateOrderStatusAsync(int orderId);
     }
 }

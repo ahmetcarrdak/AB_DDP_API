@@ -92,7 +92,7 @@ namespace DDPApi.Controllers
 
             return Ok(orderStation);
         }
-        
+
         // GET: api/Order/daterange
         [HttpGet("daterange")]
         public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrdersByDateRange([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
@@ -103,10 +103,30 @@ namespace DDPApi.Controllers
 
         // GET: api/Order/status/{status}
         [HttpGet("status/{status}")]
-        public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrdersByStatus(string status)
+        public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrdersByStatus(int status)
         {
             var orders = await _orderService.GetOrdersByStatusAsync(status);
             return Ok(orders);
+        }
+
+        // GET: api/Order/statuses
+        [HttpGet("statuses")]
+        public async Task<IActionResult> GetOrderStatuses()
+        {
+            try
+            {
+                var statuses = await _orderService.GetOrderStatusesAsync();
+
+                if (statuses == null || !statuses.Any())
+                    return NotFound("Hiçbir sipariş durumu bulunamadı.");
+
+                return Ok(statuses);
+            }
+            catch (Exception ex)
+            {
+                // Loglama yapılabilir
+                return StatusCode(500, $"Sunucu hatası: {ex.Message}");
+            }
         }
 
         // GET: api/Order/unpaid
@@ -165,6 +185,17 @@ namespace DDPApi.Controllers
         {
             var orders = await _orderService.GetCancelledOrdersAsync();
             return Ok(orders);
+        }
+
+        [HttpPut("update-status/{orderId}")]
+        public async Task<IActionResult> UpdateOrderStatus(int orderId)
+        {
+            var success = await _orderService.UpdateOrderStatusAsync(orderId);
+
+            if (!success)
+                return NotFound(new { message = "Order bulunamadı." });
+
+            return Ok(new { message = "Order status güncellendi." });
         }
     }
 }
