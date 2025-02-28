@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DDPApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250220102323_orderStatus")]
-    partial class orderStatus
+    [Migration("20250226100226_initialCreateDatabase")]
+    partial class initialCreateDatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -669,7 +669,6 @@ namespace DDPApi.Migrations
                         .HasColumnType("character varying(50)");
 
                     b.Property<int?>("OrderStatus")
-                        .HasMaxLength(50)
                         .HasColumnType("integer");
 
                     b.Property<string>("PaymentMethod")

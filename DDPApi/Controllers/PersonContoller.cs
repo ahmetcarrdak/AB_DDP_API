@@ -25,14 +25,6 @@ namespace DDPApi.Controllers
             return Ok(persons);
         }
 
-        // GET: api/Person/active
-        [HttpGet("active")]
-        public async Task<ActionResult<IEnumerable<PersonDto>>> GetActivePersons()
-        {
-            var persons = await _personService.GetActivePersonsAsync();
-            return Ok(persons);
-        }
-
         // GET: api/Person/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<PersonDto>> GetPerson(int id)
@@ -77,7 +69,6 @@ namespace DDPApi.Controllers
             }
         }
 
-
         // DELETE: api/Person/{id}
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeletePerson(int id)
@@ -87,63 +78,44 @@ namespace DDPApi.Controllers
                 return NotFound();
             return NoContent();
         }
-
-        // GET: api/Person/department/{department}
-        [HttpGet("department/{department}")]
-        public async Task<ActionResult<IEnumerable<PersonDto>>> GetPersonsByDepartment(string department)
+        
+        // POST: api/Person/collective-update
+        [HttpPost("collective-update")]
+        public async Task<IActionResult> CollectivePersonUpdate([FromBody] List<PersonCollectiveUpdateDto> personUpdates)
         {
-            var persons = await _personService.GetPersonsByDepartmentAsync(department);
-            return Ok(persons);
-        }
+            if (personUpdates == null || personUpdates.Count == 0)
+            {
+                return BadRequest("Güncellenecek personel verileri bulunamadı.");
+            }
 
-        // GET: api/Person/identity/{identityNumber}
-        [HttpGet("identity/{identityNumber}")]
-        public async Task<ActionResult<PersonDto>> GetPersonByIdentityNumber(string identityNumber)
-        {
-            var person = await _personService.GetPersonByIdentityNumberAsync(identityNumber);
-            if (person == null)
-                return NotFound();
-            return Ok(person);
-        }
+            var result = await _personService.CollectivePersonUpdateAsync(personUpdates);
 
-        // GET: api/Person/healthcheck
-        [HttpGet("healthcheck")]
-        public async Task<ActionResult<IEnumerable<PersonDto>>> GetPersonsWithExpiredHealthCheck()
-        {
-            var persons = await _personService.GetPersonsWithExpiredHealthCheckAsync();
-            return Ok(persons);
-        }
-
-        // GET: api/Person/{id}/vacation
-        [HttpGet("{id}/vacation")]
-        public async Task<ActionResult<int>> GetRemainingVacationDays(int id)
-        {
-            var days = await _personService.GetRemainingVacationDaysAsync(id);
-            return Ok(days);
-        }
-
-        // GET: api/Person/shift/{schedule}
-        [HttpGet("shift/{schedule}")]
-        public async Task<ActionResult<IEnumerable<PersonDto>>> GetPersonsByShiftSchedule(string schedule)
-        {
-            var persons = await _personService.GetPersonsByShiftScheduleAsync(schedule);
-            return Ok(persons);
-        }
-
-        // PUT: api/Person/{id}/emergency
-        [HttpPut("{id}/emergency")]
-        public async Task<IActionResult> UpdateEmergencyContact(int id, [FromBody] EmergencyContactUpdate contact)
-        {
-            var result = await _personService.UpdateEmergencyContactAsync(id, contact.Contact, contact.Phone);
             if (!result)
-                return NotFound();
-            return NoContent();
-        }
-    }
+            {
+                return NotFound("Güncelleme işlemi başarısız oldu.");
+            }
 
-    public class EmergencyContactUpdate
-    {
-        public string Contact { get; set; }
-        public string Phone { get; set; }
+            return Ok("Personel verileri başarıyla güncellendi.");
+        }
+        
+        // POST: api/Person/import-from-excel
+        [HttpPost("import-from-excel")]
+        public async Task<IActionResult> ImportFromExcel([FromBody] List<PersonExcelImportDto> excelData)
+        {
+            if (excelData == null || excelData.Count == 0)
+            {
+                return BadRequest("Excel verisi bulunamadı.");
+            }
+
+            var result = await _personService.ImportPersonsFromExcel(excelData);
+
+            if (!result)
+            {
+                return BadRequest("Excel verileri işlenirken bir hata oluştu.");
+            }
+
+            return Ok("Excel verileri başarıyla işlendi.");
+        }
+        
     }
 }

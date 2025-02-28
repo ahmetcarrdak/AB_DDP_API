@@ -666,7 +666,6 @@ namespace DDPApi.Migrations
                         .HasColumnType("character varying(50)");
 
                     b.Property<int?>("OrderStatus")
-                        .HasMaxLength(50)
                         .HasColumnType("integer");
 
                     b.Property<string>("PaymentMethod")

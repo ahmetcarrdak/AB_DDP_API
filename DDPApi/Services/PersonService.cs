@@ -31,32 +31,6 @@ public class PersonService : IPerson
         return persons.Select(MapToDto).ToList();
     }
 
-    public async Task<List<PersonDto>> GetActivePersonsAsync()
-    {
-        var persons = await _context.Persons
-            .Include(p => p.Position)
-            .Where(p => p.IsActive)
-            .ToListAsync();
-        return persons.Select(MapToDto).ToList();
-    }
-
-    public async Task<PersonDto> GetPersonByIdentityNumberAsync(string identityNumber)
-    {
-        var person = await _context.Persons
-            .Include(p => p.Position)
-            .FirstOrDefaultAsync(p => p.IdentityNumber == identityNumber);
-        return MapToDto(person);
-    }
-
-    public async Task<List<PersonDto>> GetPersonsByDepartmentAsync(string department)
-    {
-        var persons = await _context.Persons
-            .Include(p => p.Position)
-            .Where(p => p.Department == department)
-            .ToListAsync();
-        return persons.Select(MapToDto).ToList();
-    }
-
     public async Task<PersonDto> AddPersonAsync(PersonDto personDto)
     {
         var person = MapToPerson(personDto);
@@ -96,112 +70,83 @@ public class PersonService : IPerson
         return true;
     }
 
-    public async Task<bool> DeactivatePersonAsync(int id)
+    public async Task<bool> CollectivePersonUpdateAsync(List<PersonCollectiveUpdateDto> personUpdates)
     {
-        var person = await _context.Persons.FindAsync(id);
-        if (person == null) return false;
+        if (personUpdates.Count == 0) return false;
 
-        person.IsActive = false;
+        // Tüm personel ID'lerini al
+        var personIds = personUpdates.Select(p => p.Id).ToList();
+
+        // Veritabanından ilgili personelleri çek
+        var persons = await _context.Persons.Where(p => personIds.Contains(p.Id)).ToListAsync();
+        if (persons.Count == 0) return false;
+
+        // Her bir personel için güncelleme yap
+        foreach (var personUpdate in personUpdates)
+        {
+            var person = persons.FirstOrDefault(p => p.Id == personUpdate.Id);
+            if (person != null)
+            {
+                person.FirstName = personUpdate.FirstName;
+                person.LastName = personUpdate.LastName;
+                person.Department = personUpdate.Department;
+                person.PositionId = personUpdate.PositionId;
+                person.PhoneNumber = personUpdate.PhoneNumber;
+                person.Email = personUpdate.Email;
+                person.IsActive = personUpdate.IsActive;
+            }
+        }
+
+        // Değişiklikleri kaydet
+        _context.Persons.UpdateRange(persons);
         await _context.SaveChangesAsync();
         return true;
     }
-
-    public async Task<List<PersonDto>> GetPersonsByPositionAsync(string position)
+    
+    public async Task<bool> ImportPersonsFromExcel(List<PersonExcelImportDto> excelData)
     {
-        var persons = await _context.Persons
-            .Include(p => p.Position)
-            .Where(p => p.Position.PositionName == position)
-            .ToListAsync();
-        return persons.Select(MapToDto).ToList();
-    }
+        if (excelData == null || excelData.Count == 0)
+        {
+            return false; // Excel verisi yoksa false dön
+        }
 
-    public async Task<decimal> GetTotalSalaryAsync()
-    {
-        return await _context.Persons
-            .Where(p => p.IsActive)
-            .SumAsync(p => p.Salary.GetValueOrDefault());
-    }
+        var personsToAdd = new List<Person>();
 
-    public async Task<int> GetTotalActivePersonCountAsync()
-    {
-        return await _context.Persons.CountAsync(p => p.IsActive);
-    }
+        foreach (var excelRow in excelData)
+        {
+            var person = new Person
+            {
+                FirstName = excelRow.FirstName,
+                LastName = excelRow.LastName,
+                IdentityNumber = excelRow.IdentityNumber,
+                BirthDate = excelRow.BirthDate,
+                Address = excelRow.Address,
+                PhoneNumber = excelRow.PhoneNumber,
+                Email = excelRow.Email,
+                HireDate = excelRow.HireDate,
+                Department = excelRow.Department,
+                PositionId = excelRow.PositionId,
+                Salary = excelRow.Salary,
+                IsActive = excelRow.IsActive,
+                BloodType = excelRow.BloodType,
+                EmergencyContact = excelRow.EmergencyContact,
+                EmergencyPhone = excelRow.EmergencyPhone,
+                EducationLevel = excelRow.EducationLevel,
+                HasDriverLicense = !string.IsNullOrEmpty(excelRow.DriverLicenseType),
+                Notes = excelRow.Notes,
+                VacationDays = excelRow.VacationDays,
+                HasHealthInsurance = excelRow.HasHealthInsurance,
+                LastHealthCheck = excelRow.LastHealthCheck,
+            };
 
-    public async Task<List<PersonDto>> GetPersonsByHireDateRangeAsync(DateTime startDate, DateTime endDate)
-    {
-        var persons = await _context.Persons
-            .Include(p => p.Position)
-            .Where(p => p.HireDate >= startDate && p.HireDate <= endDate)
-            .ToListAsync();
-        return persons.Select(MapToDto).ToList();
-    }
+            personsToAdd.Add(person);
+        }
 
-    public async Task<List<PersonDto>> SearchPersonsAsync(string searchTerm)
-    {
-        var persons = await _context.Persons
-            .Include(p => p.Position)
-            .Where(p => p.FirstName.Contains(searchTerm) ||
-                       p.LastName.Contains(searchTerm) ||
-                       p.Department.Contains(searchTerm) ||
-                       p.Position.PositionName.Contains(searchTerm))
-            .ToListAsync();
-        return persons.Select(MapToDto).ToList();
-    }
-
-    public async Task<bool> UpdateSalaryAsync(int id, decimal newSalary)
-    {
-        var person = await _context.Persons.FindAsync(id);
-        if (person == null) return false;
-
-        person.Salary = newSalary;
+        // Tüm personelleri veritabanına ekle
+        _context.Persons.AddRange(personsToAdd);
         await _context.SaveChangesAsync();
-        return true;
-    }
 
-    public async Task<bool> UpdateDepartmentAsync(int id, string newDepartment)
-    {
-        var person = await _context.Persons.FindAsync(id);
-        if (person == null) return false;
-
-        person.Department = newDepartment;
-        await _context.SaveChangesAsync();
-        return true;
-    }
-
-    public async Task<List<PersonDto>> GetPersonsWithExpiredHealthCheckAsync()
-    {
-        var today = DateTime.Today;
-        var persons = await _context.Persons
-            .Include(p => p.Position)
-            .Where(p => p.LastHealthCheck == null || p.LastHealthCheck.Value.AddYears(1) < today)
-            .ToListAsync();
-        return persons.Select(MapToDto).ToList();
-    }
-
-    public async Task<int> GetRemainingVacationDaysAsync(int id)
-    {
-        var person = await _context.Persons.FindAsync(id);
-        return person?.VacationDays ?? 0;
-    }
-
-    public async Task<List<PersonDto>> GetPersonsByShiftScheduleAsync(string shiftSchedule)
-    {
-        var persons = await _context.Persons
-            .Include(p => p.Position)
-            .Where(p => p.ShiftSchedule == shiftSchedule)
-            .ToListAsync();
-        return persons.Select(MapToDto).ToList();
-    }
-
-    public async Task<bool> UpdateEmergencyContactAsync(int id, string contact, string phone)
-    {
-        var person = await _context.Persons.FindAsync(id);
-        if (person == null) return false;
-
-        person.EmergencyContact = contact;
-        person.EmergencyPhone = phone;
-        await _context.SaveChangesAsync();
-        return true;
+        return true; // Başarılıysa true dön
     }
 
     private PersonDto MapToDto(Person person)
@@ -234,7 +179,6 @@ public class PersonService : IPerson
             HasHealthInsurance = person.HasHealthInsurance,
             LastHealthCheck = person.LastHealthCheck,
             ShiftSchedule = person.ShiftSchedule,
-            PositionName = person.Position?.PositionName
         };
     }
 
