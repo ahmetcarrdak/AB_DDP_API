@@ -1,4 +1,3 @@
-
 using DDPApi.Interfaces;
 using DDPApi.Models;
 using DDPApi.DTO;
@@ -11,10 +10,12 @@ namespace DDPApi.Controllers
     public class PersonController : ControllerBase
     {
         private readonly IPerson _personService;
+        private readonly ILogger<PersonService> _logger;
 
-        public PersonController(IPerson personService)
+        public PersonController(IPerson personService, ILogger<PersonService> logger)
         {
             _personService = personService;
+            _logger = logger;
         }
 
         // GET: api/Person/all
@@ -78,10 +79,11 @@ namespace DDPApi.Controllers
                 return NotFound();
             return NoContent();
         }
-        
+
         // POST: api/Person/collective-update
         [HttpPost("collective-update")]
-        public async Task<IActionResult> CollectivePersonUpdate([FromBody] List<PersonCollectiveUpdateDto> personUpdates)
+        public async Task<IActionResult> CollectivePersonUpdate(
+            [FromBody] List<PersonCollectiveUpdateDto> personUpdates)
         {
             if (personUpdates == null || personUpdates.Count == 0)
             {
@@ -97,25 +99,5 @@ namespace DDPApi.Controllers
 
             return Ok("Personel verileri başarıyla güncellendi.");
         }
-        
-        // POST: api/Person/import-from-excel
-        [HttpPost("import-from-excel")]
-        public async Task<IActionResult> ImportFromExcel([FromBody] List<PersonExcelImportDto> excelData)
-        {
-            if (excelData == null || excelData.Count == 0)
-            {
-                return BadRequest("Excel verisi bulunamadı.");
-            }
-
-            var result = await _personService.ImportPersonsFromExcel(excelData);
-
-            if (!result)
-            {
-                return BadRequest("Excel verileri işlenirken bir hata oluştu.");
-            }
-
-            return Ok("Excel verileri başarıyla işlendi.");
-        }
-        
     }
 }

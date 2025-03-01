@@ -5,14 +5,17 @@ using Microsoft.EntityFrameworkCore;
 using DDPApi.Data;
 using DDPApi.Models;
 using DDPApi.DTO;
+using System.Linq;
 
 public class PersonService : IPerson
 {
     private readonly AppDbContext _context;
+    private readonly ILogger<PersonService> _logger;
 
-    public PersonService(AppDbContext context)
+    public PersonService(AppDbContext context, ILogger<PersonService> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     public async Task<PersonDto> GetPersonByIdAsync(int id)
@@ -102,52 +105,12 @@ public class PersonService : IPerson
         await _context.SaveChangesAsync();
         return true;
     }
-    
-    public async Task<bool> ImportPersonsFromExcel(List<PersonExcelImportDto> excelData)
+
+    private DateTime ConvertToUtcDateTime(DateTime? excelRowBirthDate)
     {
-        if (excelData == null || excelData.Count == 0)
-        {
-            return false; // Excel verisi yoksa false dön
-        }
-
-        var personsToAdd = new List<Person>();
-
-        foreach (var excelRow in excelData)
-        {
-            var person = new Person
-            {
-                FirstName = excelRow.FirstName,
-                LastName = excelRow.LastName,
-                IdentityNumber = excelRow.IdentityNumber,
-                BirthDate = excelRow.BirthDate,
-                Address = excelRow.Address,
-                PhoneNumber = excelRow.PhoneNumber,
-                Email = excelRow.Email,
-                HireDate = excelRow.HireDate,
-                Department = excelRow.Department,
-                PositionId = excelRow.PositionId,
-                Salary = excelRow.Salary,
-                IsActive = excelRow.IsActive,
-                BloodType = excelRow.BloodType,
-                EmergencyContact = excelRow.EmergencyContact,
-                EmergencyPhone = excelRow.EmergencyPhone,
-                EducationLevel = excelRow.EducationLevel,
-                HasDriverLicense = !string.IsNullOrEmpty(excelRow.DriverLicenseType),
-                Notes = excelRow.Notes,
-                VacationDays = excelRow.VacationDays,
-                HasHealthInsurance = excelRow.HasHealthInsurance,
-                LastHealthCheck = excelRow.LastHealthCheck,
-            };
-
-            personsToAdd.Add(person);
-        }
-
-        // Tüm personelleri veritabanına ekle
-        _context.Persons.AddRange(personsToAdd);
-        await _context.SaveChangesAsync();
-
-        return true; // Başarılıysa true dön
+        throw new NotImplementedException();
     }
+
 
     private PersonDto MapToDto(Person person)
     {

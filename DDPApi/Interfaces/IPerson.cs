@@ -17,6 +17,4 @@ public interface IPerson
     Task<bool> DeletePersonAsync(int id);                        // Personeli sil
     
     Task<bool> CollectivePersonUpdateAsync(List<PersonCollectiveUpdateDto> personUpdates);        // Toplu işlem yaparak personel bilgilerini güncelle
-
-    Task<bool> ImportPersonsFromExcel(List<PersonExcelImportDto> excelData); // Excel'den personel bilgileri import et
 }
