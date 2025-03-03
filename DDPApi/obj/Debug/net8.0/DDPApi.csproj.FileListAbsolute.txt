@@ -426,3 +426,4 @@ C:\Users\Gokcag\Desktop\AB_DDP_API\DDPApi\bin\Debug\net8.0\Microsoft.IdentityMod
 C:\Users\Gokcag\Desktop\AB_DDP_API\DDPApi\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
 C:\Users\Gokcag\Desktop\AB_DDP_API\DDPApi\bin\Debug\net8.0\Newtonsoft.Json.dll
 C:\Users\Gokcag\Desktop\AB_DDP_API\DDPApi\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\Gokcag\Desktop\AB_DDP_API\DDPApi\bin\Debug\net8.0\BCrypt.Net-Core.dll

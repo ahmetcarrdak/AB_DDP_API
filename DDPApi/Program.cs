@@ -61,7 +61,7 @@ builder.Services.AddScoped<IStore, StoreService>();
 builder.Services.AddScoped<IWork, WorkService>();
 builder.Services.AddScoped<IPositions, PositionsService>();
 builder.Services.AddScoped<IStages, StagesService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAuth, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 
 builder.Services.AddSignalR();

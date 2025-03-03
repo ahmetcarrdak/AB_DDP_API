@@ -11,7 +11,7 @@ namespace DDPApi.Models
         public int Id { get; set; }                                   // Benzersiz kimlik numarası
 
         [Required]
-        public int CompanyId { get; set; }
+        public Guid CompanyId { get; set; }
         // Şirketin benzersiz kimlik numarası.
 
         [Required]

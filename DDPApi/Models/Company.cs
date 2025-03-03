@@ -9,6 +9,8 @@ namespace DDPApi.Models
         [Key]
         public int Id { get; set; }
 
+        public Guid CompanyId { get; set; }
+
         [Required]
         [StringLength(100)]
         public string Name { get; set; }

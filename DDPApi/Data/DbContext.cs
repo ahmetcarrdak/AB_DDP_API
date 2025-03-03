@@ -20,6 +20,7 @@ namespace DDPApi.Data
     public DbSet<QualityControlRecord> QualityControlRecords { get; set; }
     public DbSet<Positions> Positions { get; set; }
     public DbSet<Stages> Stages { get; set; }
+    public DbSet<Company> Companies { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

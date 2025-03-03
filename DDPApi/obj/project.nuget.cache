@@ -1,10 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "1V0XHOThoVE=",
+  "dgSpecHash": "ktayzCYgMjM=",
   "success": true,
   "projectFilePath": "C:\\Users\\Gokcag\\Desktop\\AB_DDP_API\\DDPApi\\DDPApi.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Gokcag\\.nuget\\packages\\automapper\\11.0.0\\automapper.11.0.0.nupkg.sha512",
+    "C:\\Users\\Gokcag\\.nuget\\packages\\bcrypt.net-core\\1.6.0\\bcrypt.net-core.1.6.0.nupkg.sha512",
     "C:\\Users\\Gokcag\\.nuget\\packages\\duende.identityserver\\6.0.4\\duende.identityserver.6.0.4.nupkg.sha512",
     "C:\\Users\\Gokcag\\.nuget\\packages\\duende.identityserver.aspnetidentity\\6.0.4\\duende.identityserver.aspnetidentity.6.0.4.nupkg.sha512",
     "C:\\Users\\Gokcag\\.nuget\\packages\\duende.identityserver.entityframework\\6.0.4\\duende.identityserver.entityframework.6.0.4.nupkg.sha512",
