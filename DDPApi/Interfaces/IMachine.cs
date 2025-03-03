@@ -20,14 +20,5 @@ namespace DDPApi.Interfaces
 
         // Tüm makinelerin listesini getirir.
         Task<IEnumerable<Machine>> GetAllMachinesAsync();
-
-        // Çalışır durumda olan makinelerin listesini getirir.
-        Task<IEnumerable<Machine>> GetOperationalMachinesAsync();
-
-        // Çalışmayan makinelerin listesini getirir.
-        Task<IEnumerable<Machine>> GetNonOperationalMachinesAsync();
-
-        // Belirtilen konumdaki makinelerin listesini getirir.
-        Task<IEnumerable<Machine>> GetMachinesByLocationAsync(string location);
     }
 }

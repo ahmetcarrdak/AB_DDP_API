@@ -3,75 +3,103 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using DDPApi.Models;
 
-public class Person
+namespace DDPApi.Models
 {
-    [Key]
-    public int Id { get; set; }                                   // Benzersiz kimlik numarası
+    public class Person
+    {
+        [Key]
+        public int Id { get; set; }                                   // Benzersiz kimlik numarası
 
-    [Required]
-    [StringLength(50)]
-    public string FirstName { get; set; }                        // Personelin adı
+        [Required]
+        public int CompanyId { get; set; }
+        // Şirketin benzersiz kimlik numarası.
 
-    [Required]
-    [StringLength(50)]
-    public string LastName { get; set; }                         // Personelin soyadı
+        [Required]
+        [StringLength(50)]
+        public string FirstName { get; set; }                        // Personelin adı
 
-    [Required]
-    [StringLength(11)]
-    public string IdentityNumber { get; set; }                   // TC Kimlik numarası (benzersiz olmalı)
+        [Required]
+        [StringLength(50)]
+        public string LastName { get; set; }                         // Personelin soyadı
 
-    public DateTime? BirthDate { get; set; }                     // Doğum tarihi (opsiyonel)
+        [Required]
+        [StringLength(11)]
+        public string IdentityNumber { get; set; }                   // TC Kimlik numarası (benzersiz olmalı)
+        
+        [Required]
+        public string PasswordHash { get; set; }                     // Şifre (hash şifrelemek için kullanılmalı)
 
-    [StringLength(200)]
-    public string? Address { get; set; }                         // İkamet adresi (opsiyonel)
+        [Required]
+        public string Salt { get; set; }
 
-    [StringLength(15)]
-    public string? PhoneNumber { get; set; }                     // Telefon numarası (opsiyonel)
+        [Required]
+        [StringLength(50)]
+        public string Username { get; set; }
 
-    [EmailAddress]
-    [StringLength(100)]
-    public string? Email { get; set; }                           // E-posta adresi (opsiyonel)
+        [Required]
+        public string Role { get; set; } = "User";
 
-    [Required]
-    public DateTime HireDate { get; set; }                       // İşe giriş tarihi
+        public string RefreshToken { get; set; }
+        
+        public DateTime? RefreshTokenExpiryTime { get; set; }
 
-    public DateTime? TerminationDate { get; set; }               // İşten çıkış tarihi (opsiyonel)
+        public DateTime? BirthDate { get; set; }                     // Doğum tarihi (opsiyonel)
 
-    [StringLength(50)]
-    public string? Department { get; set; }                      // Çalıştığı departman (opsiyonel)
+        [StringLength(200)]
+        public string? Address { get; set; }                         // İkamet adresi (opsiyonel)
 
-    [Required]
-    public int PositionId { get; set; }                        // Görevi/Pozisyonu (opsiyonel)
+        [StringLength(15)]
+        public string? PhoneNumber { get; set; }                     // Telefon numarası (opsiyonel)
 
-    [Column(TypeName = "decimal(18,2)")]
-    public decimal? Salary { get; set; }                         // Maaş bilgisi (opsiyonel)
+        [EmailAddress]
+        [StringLength(100)]
+        public string? Email { get; set; }                           // E-posta adresi (opsiyonel)
 
-    public bool IsActive { get; set; } = true;                   // Aktif çalışan durumu (varsayılan: aktif)
+        [Required]
+        public DateTime HireDate { get; set; }                       // İşe giriş tarihi
 
-    [StringLength(20)]
-    public string? BloodType { get; set; }                       // Kan grubu (opsiyonel)
+        public DateTime? TerminationDate { get; set; }               // İşten çıkış tarihi (opsiyonel)
 
-    [StringLength(100)]
-    public string? EmergencyContact { get; set; }                // Acil durumda ulaşılacak kişi (opsiyonel)
+        [StringLength(50)]
+        public string? Department { get; set; }                      // Çalıştığı departman (opsiyonel)
 
-    [StringLength(15)]
-    public string? EmergencyPhone { get; set; }                  // Acil durumda ulaşılacak telefon (opsiyonel)
+        [Required]
+        public int PositionId { get; set; }                        // Görevi/Pozisyonu (opsiyonel)
 
-    [StringLength(50)]
-    public string? EducationLevel { get; set; }                  // Eğitim seviyesi (opsiyonel)
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? Salary { get; set; }                         // Maaş bilgisi (opsiyonel)
 
-    public bool HasDriverLicense { get; set; } = false;          // Sürücü belgesi durumu (varsayılan: yok)
+        public bool IsActive { get; set; } = true;                   // Aktif çalışan durumu (varsayılan: aktif)
 
-    [StringLength(500)]
-    public string? Notes { get; set; }                           // Personel hakkında notlar (opsiyonel)
+        [StringLength(20)]
+        public string? BloodType { get; set; }                       // Kan grubu (opsiyonel)
 
-    public int VacationDays { get; set; } = 0;                   // Yıllık izin günü sayısı (varsayılan: 0)
+        [StringLength(100)]
+        public string? EmergencyContact { get; set; }                // Acil durumda ulaşılacak kişi (opsiyonel)
 
-    public bool HasHealthInsurance { get; set; } = false;        // Sağlık sigortası durumu (varsayılan: yok)
+        [StringLength(15)]
+        public string? EmergencyPhone { get; set; }                  // Acil durumda ulaşılacak telefon (opsiyonel)
 
-    public DateTime? LastHealthCheck { get; set; }               // Son sağlık kontrolü tarihi (opsiyonel)
+        [StringLength(50)]
+        public string? EducationLevel { get; set; }                  // Eğitim seviyesi (opsiyonel)
 
-    [StringLength(50)]
-    public string? ShiftSchedule { get; set; }                   // Vardiya planı (opsiyonel)
-    public virtual Positions Position { get; set; }
+        public bool HasDriverLicense { get; set; } = false;          // Sürücü belgesi durumu (varsayılan: yok)
+
+        [StringLength(500)]
+        public string? Notes { get; set; }                           // Personel hakkında notlar (opsiyonel)
+
+        public int VacationDays { get; set; } = 0;                   // Yıllık izin günü sayısı (varsayılan: 0)
+
+        public bool HasHealthInsurance { get; set; } = false;        // Sağlık sigortası durumu (varsayılan: yok)
+
+        public DateTime? LastHealthCheck { get; set; }               // Son sağlık kontrolü tarihi (opsiyonel)
+
+        [StringLength(50)]
+        public string? ShiftSchedule { get; set; }                   // Vardiya planı (opsiyonel)
+
+        // Navigation property
+        public virtual Positions Position { get; set; }
+
+        public virtual Company Company { get; set; }
+    }
 }

@@ -17,13 +17,7 @@ namespace DDPApi.Data
     public DbSet<MachineFault> MachineFaults { get; set; }
     public DbSet<Machine> Machines { get; set; }
     public DbSet<MaintenanceRecord> MaintenanceRecords { get; set; }
-    public DbSet<Notification> Notifications { get; set; }
-    public DbSet<Alert> Alerts { get; set; }
     public DbSet<QualityControlRecord> QualityControlRecords { get; set; }
-    public DbSet<InventoryMovement> InventoryMovements { get; set; }
-    public DbSet<SupplierProduct> SupplierProducts { get; set; }
-    public DbSet<Supplier> Suppliers { get; set; }
-    public DbSet<WorkforcePlanning> WorkforcePlannings { get; set; }
     public DbSet<Positions> Positions { get; set; }
     public DbSet<Stages> Stages { get; set; }
 

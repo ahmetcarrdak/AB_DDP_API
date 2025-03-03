@@ -8,6 +8,10 @@ public class Work
     [Key]
     public int WorkId { get; set; }                             // İş benzersiz kimlik numarası
 
+    [Required]
+    public int CompanyId { get; set; }
+    // Şirketin benzersiz kimlik numarası.
+
     public int StationId { get; set; } = 1;                    // İstasyon ID'si
     public int StagesId { get; set; } = 1;                       // istasyonda ki aşamayı belirtir
 

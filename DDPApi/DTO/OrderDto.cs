@@ -57,8 +57,6 @@ namespace DDPApi.DTO
         public decimal? TaxAmount { get; set; } // Vergi tutarı (opsiyonel)
 
         [StringLength(50)] public string? InvoiceNumber { get; set; } // Fatura numarası (opsiyonel)
-
-        public ToPersons? ToPersons { get; set; }
     }
 
     public class OrderStationDto

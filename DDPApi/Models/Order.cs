@@ -10,6 +10,10 @@ public class Order
     public int? StationId { get; set; } = 1;                     // İstasyon ID'si
     public int StagesId { get; set; } = 1;
 
+    [Required]
+    public int CompanyId { get; set; }
+    // Şirketin benzersiz kimlik numarası.
+
 
     [Required]
     public DateTime OrderDate { get; set; }                      // Sipariş tarihi

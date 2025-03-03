@@ -33,7 +33,6 @@ namespace DDPApi.Services
             if (machine != null)
             {
                 machine.Name = updatedMachine.Name;
-                machine.Code = updatedMachine.Code;
                 machine.Location = updatedMachine.Location;
                 machine.Manufacturer = updatedMachine.Manufacturer;
                 machine.Model = updatedMachine.Model;
@@ -71,24 +70,6 @@ namespace DDPApi.Services
         public async Task<IEnumerable<Machine>> GetAllMachinesAsync()
         {
             return await Task.FromResult(_context.Machines.ToList()); // Tüm makineleri döndür
-        }
-
-        // Çalışır durumda olan makineleri getirir
-        public async Task<IEnumerable<Machine>> GetOperationalMachinesAsync()
-        {
-            return await Task.FromResult(_context.Machines.Where(m => m.IsOperational).ToList());
-        }
-
-        // Çalışmayan makineleri getirir
-        public async Task<IEnumerable<Machine>> GetNonOperationalMachinesAsync()
-        {
-            return await Task.FromResult(_context.Machines.Where(m => !m.IsOperational).ToList());
-        }
-
-        // Belirli bir lokasyondaki makineleri getirir
-        public async Task<IEnumerable<Machine>> GetMachinesByLocationAsync(string location)
-        {
-            return await Task.FromResult(_context.Machines.Where(m => m.Location == location).ToList());
         }
     }
 }

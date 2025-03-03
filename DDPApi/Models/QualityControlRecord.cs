@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace DDPApi.Models;
 
 public class QualityControlRecord
@@ -9,4 +11,8 @@ public class QualityControlRecord
     public DateTime TestDate { get; set; }             // Test tarihi
     public string TestedBy { get; set; }               // Testi yapan kişi
     public string Comments { get; set; }               // Test ile ilgili yorumlar
+
+    [Required]
+    public int CompanyId { get; set; }
+    // Şirketin benzersiz kimlik numarası.
 }

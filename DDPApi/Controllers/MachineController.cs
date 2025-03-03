@@ -1,99 +1,115 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using DDPApi.Interfaces;
+using DDPApi.Data;
 using DDPApi.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace DDPApi.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class MachineController : ControllerBase
     {
-        private readonly IMachine _machineService;
+        private readonly AppDbContext _context;
 
-        // Constructor ile IMachineService bağımlılığı alınır
-        public MachineController(IMachine machineService)
+        public MachineController(AppDbContext context)
         {
-            _machineService = machineService;
+            _context = context;
         }
 
-        // Tüm makineleri getirir
+        private int GetCompanyId()
+        {
+            return int.Parse(User.FindFirst("CompanyId")?.Value ?? "0");
+        }
+
         [HttpGet]
-        public async Task<IActionResult> GetAllMachines()
+        public async Task<ActionResult<IEnumerable<Machine>>> GetMachines()
         {
-            var machines = await _machineService.GetAllMachinesAsync();
-            return Ok(machines); // 200 OK ve veri döndürür
+            var companyId = GetCompanyId();
+            return await _context.Machines
+                .Where(m => m.CompanyId == companyId)
+                .ToListAsync();
         }
 
-        // ID'ye göre bir makine getirir
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetMachineById(int id)
+        public async Task<ActionResult<Machine>> GetMachine(int id)
         {
-            var machine = await _machineService.GetMachineByIdAsync(id);
+            var companyId = GetCompanyId();
+            var machine = await _context.Machines
+                .FirstOrDefaultAsync(m => m.Id == id && m.CompanyId == companyId);
+
             if (machine == null)
-                return NotFound(); // 404 Not Found
-            return Ok(machine); // 200 OK
+                return NotFound();
+
+            return machine;
         }
 
-        // Yeni bir makine ekler
-        [HttpPost]
-        public async Task<IActionResult> AddMachine([FromBody] Machine machine)
-        {
-            if (machine == null)
-                return BadRequest("Makine bilgisi geçersiz."); // 400 Bad Request
-
-            var createdMachine = await _machineService.AddMachineAsync(machine);
-            return CreatedAtAction(nameof(GetMachineById), new { id = createdMachine.MachineId }, createdMachine); // 201 Created
-        }
-
-        // ID'ye göre bir makineyi günceller
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateMachine(int id, [FromBody] Machine updatedMachine)
+        public async Task<IActionResult> UpdateMachine(int id, Machine machine)
         {
-            if (updatedMachine == null)
-                return BadRequest("Makine bilgisi geçersiz."); // 400 Bad Request
+            if (id != machine.Id)
+                return BadRequest();
 
-            var machine = await _machineService.UpdateMachineAsync(id, updatedMachine);
-            if (machine == null)
-                return NotFound(); // 404 Not Found
+            var companyId = GetCompanyId();
+            var existingMachine = await _context.Machines
+                .FirstOrDefaultAsync(m => m.Id == id && m.CompanyId == companyId);
 
-            return Ok(machine); // 200 OK
+            if (existingMachine == null)
+                return NotFound();
+
+            machine.CompanyId = companyId; // Ensure company ID is preserved
+            _context.Entry(existingMachine).CurrentValues.SetValues(machine);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!MachineExists(id))
+                    return NotFound();
+                throw;
+            }
+
+            return NoContent();
         }
 
-        // ID'ye göre bir makineyi siler
+        [HttpPost]
+        public async Task<ActionResult<Machine>> CreateMachine(Machine machine)
+        {
+            machine.CompanyId = GetCompanyId();
+            _context.Machines.Add(machine);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetMachine), new { id = machine.Id }, machine);
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteMachine(int id)
         {
-            var isDeleted = await _machineService.DeleteMachineAsync(id);
-            if (!isDeleted)
-                return NotFound(); // 404 Not Found
+            var companyId = GetCompanyId();
+            var machine = await _context.Machines
+                .FirstOrDefaultAsync(m => m.Id == id && m.CompanyId == companyId);
 
-            return NoContent(); // 204 No Content
+            if (machine == null)
+                return NotFound();
+
+            _context.Machines.Remove(machine);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
 
-        // Çalışır durumda olan makineleri getirir
-        [HttpGet("operational")]
-        public async Task<IActionResult> GetOperationalMachines()
+        private bool MachineExists(int id)
         {
-            var machines = await _machineService.GetOperationalMachinesAsync();
-            return Ok(machines); // 200 OK
-        }
-
-        // Çalışmayan makineleri getirir
-        [HttpGet("non-operational")]
-        public async Task<IActionResult> GetNonOperationalMachines()
-        {
-            var machines = await _machineService.GetNonOperationalMachinesAsync();
-            return Ok(machines); // 200 OK
-        }
-
-        // Belirtilen lokasyondaki makineleri getirir
-        [HttpGet("location/{location}")]
-        public async Task<IActionResult> GetMachinesByLocation(string location)
-        {
-            var machines = await _machineService.GetMachinesByLocationAsync(location);
-            return Ok(machines); // 200 OK
+            var companyId = GetCompanyId();
+            return _context.Machines.Any(e => e.Id == id && e.CompanyId == companyId);
         }
     }
 }

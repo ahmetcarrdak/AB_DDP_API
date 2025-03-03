@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace DDPApi.Models
 {
@@ -27,5 +28,9 @@ namespace DDPApi.Models
         public string? QualityStatus { get; set; } // Kalite durumu (nullable)
         public DateTime CreatedDate { get; set; } // Kayıt oluşturulma tarihi
         public DateTime UpdatedDate { get; set; } // Son güncelleme tarihi
+
+        [Required]
+        public int CompanyId { get; set; }
+        // Şirketin benzersiz kimlik numarası.
     }
 }

@@ -60,5 +60,9 @@ namespace DDPApi.Models
 
         // Bir sonraki planlanan bakım tarihi
         public DateTime? NextMaintenanceDate { get; set; }
+
+        [Required]
+        public int CompanyId { get; set; }
+        // Şirketin benzersiz kimlik numarası.
     }
 }

@@ -34,8 +34,6 @@ public class WorkDto
     public string? QualityNotes { get; set; } // Kalite değerlendirme notları
     public bool? HasSafetyRisks { get; set; } // Güvenlik riski var mı?
     public string? SafetyNotes { get; set; } // Güvenlik notları
-
-    public ToPersons? ToPersons { get; set; }
 }
 
 public class WorkStationDto

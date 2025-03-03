@@ -7,69 +7,29 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DDPApi.Migrations
 {
     /// <inheritdoc />
-    public partial class initialCreateDatabase : Migration
+    public partial class InitalCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Alerts",
+                name: "Company",
                 columns: table => new
                 {
-                    AlertId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    MachineId = table.Column<int>(type: "integer", nullable: false),
-                    AlertType = table.Column<string>(type: "text", nullable: false),
-                    Message = table.Column<string>(type: "text", nullable: false),
-                    AlertDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    IsResolved = table.Column<bool>(type: "boolean", nullable: false),
-                    ResolvedBy = table.Column<string>(type: "text", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Alerts", x => x.AlertId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "InventoryMovements",
-                columns: table => new
-                {
-                    InventoryMovementId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ItemId = table.Column<int>(type: "integer", nullable: false),
-                    ItemName = table.Column<string>(type: "text", nullable: false),
-                    Quantity = table.Column<int>(type: "integer", nullable: false),
-                    MovementDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    MovementType = table.Column<string>(type: "text", nullable: false),
-                    SourceWarehouse = table.Column<string>(type: "text", nullable: false),
-                    DestinationWarehouse = table.Column<string>(type: "text", nullable: false),
-                    Cost = table.Column<decimal>(type: "numeric", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_InventoryMovements", x => x.InventoryMovementId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Machines",
-                columns: table => new
-                {
-                    MachineId = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Code = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    Location = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Manufacturer = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    Model = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    TotalFault = table.Column<int>(type: "integer", nullable: false),
-                    PurchaseDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    IsOperational = table.Column<bool>(type: "boolean", nullable: false),
+                    TaxNumber = table.Column<string>(type: "character varying(11)", maxLength: 11, nullable: false),
+                    Address = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    PhoneNumber = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    Email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    WebSite = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Machines", x => x.MachineId);
+                    table.PrimaryKey("PK_Company", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -78,6 +38,7 @@ namespace DDPApi.Migrations
                 {
                     MaintenanceRecordId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CompanyId = table.Column<int>(type: "integer", nullable: false),
                     MachineId = table.Column<int>(type: "integer", nullable: false),
                     MaintenanceType = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
@@ -88,23 +49,6 @@ namespace DDPApi.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_MaintenanceRecords", x => x.MaintenanceRecordId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Notifications",
-                columns: table => new
-                {
-                    NotificationId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<int>(type: "integer", nullable: false),
-                    Message = table.Column<string>(type: "text", nullable: false),
-                    NotificationDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    IsRead = table.Column<bool>(type: "boolean", nullable: false),
-                    Type = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Notifications", x => x.NotificationId);
                 });
 
             migrationBuilder.CreateTable(
@@ -132,7 +76,8 @@ namespace DDPApi.Migrations
                     TestResult = table.Column<string>(type: "text", nullable: false),
                     TestDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     TestedBy = table.Column<string>(type: "text", nullable: false),
-                    Comments = table.Column<string>(type: "text", nullable: false)
+                    Comments = table.Column<string>(type: "text", nullable: false),
+                    CompanyId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -175,7 +120,8 @@ namespace DDPApi.Migrations
                     RequiresQualityCheck = table.Column<bool>(type: "boolean", nullable: false),
                     MaintenanceRequired = table.Column<bool>(type: "boolean", nullable: false),
                     LastMaintenanceDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    NextMaintenanceDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    NextMaintenanceDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CompanyId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -209,7 +155,8 @@ namespace DDPApi.Migrations
                     LastInventoryDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     QualityStatus = table.Column<string>(type: "text", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CompanyId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -217,70 +164,40 @@ namespace DDPApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Suppliers",
+                name: "Machines",
                 columns: table => new
                 {
-                    SupplierId = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    ContactPerson = table.Column<string>(type: "text", nullable: false),
-                    PhoneNumber = table.Column<string>(type: "text", nullable: false),
-                    Email = table.Column<string>(type: "text", nullable: false),
-                    Address = table.Column<string>(type: "text", nullable: false),
-                    Rating = table.Column<decimal>(type: "numeric", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Suppliers", x => x.SupplierId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "WorkforcePlannings",
-                columns: table => new
-                {
-                    WorkforcePlanningId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    EmployeeId = table.Column<int>(type: "integer", nullable: false),
-                    StationId = table.Column<int>(type: "integer", nullable: false),
-                    ShiftStart = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ShiftEnd = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    TaskDescription = table.Column<string>(type: "text", nullable: false),
-                    IsAssigned = table.Column<bool>(type: "boolean", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_WorkforcePlannings", x => x.WorkforcePlanningId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "MachineFaults",
-                columns: table => new
-                {
-                    FaultId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    MachineId = table.Column<int>(type: "integer", nullable: false),
-                    MachineCode = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    FaultStartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    FaultEndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    FaultDescription = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    Cause = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    Solution = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    FaultSeverity = table.Column<string>(type: "text", nullable: false),
-                    ReportedBy = table.Column<string>(type: "text", nullable: false),
-                    ResolvedBy = table.Column<string>(type: "text", nullable: false),
-                    IsResolved = table.Column<bool>(type: "boolean", nullable: false),
+                    CompanyId = table.Column<int>(type: "integer", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Model = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    SerialNumber = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Manufacturer = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    PurchaseDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    PurchasePrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    LastMaintenanceDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    NextMaintenanceDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    Location = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    WarrantyPeriod = table.Column<int>(type: "integer", nullable: true),
+                    PowerConsumption = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Dimensions = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Weight = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     TotalFault = table.Column<int>(type: "integer", nullable: false),
+                    IsOperational = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MachineFaults", x => x.FaultId);
+                    table.PrimaryKey("PK_Machines", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_MachineFaults_Machines_MachineId",
-                        column: x => x.MachineId,
-                        principalTable: "Machines",
-                        principalColumn: "MachineId",
+                        name: "FK_Machines_Company_CompanyId",
+                        column: x => x.CompanyId,
+                        principalTable: "Company",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -290,9 +207,16 @@ namespace DDPApi.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CompanyId = table.Column<int>(type: "integer", nullable: false),
                     FirstName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     LastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     IdentityNumber = table.Column<string>(type: "character varying(11)", maxLength: 11, nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: false),
+                    Salt = table.Column<string>(type: "text", nullable: false),
+                    Username = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Role = table.Column<string>(type: "text", nullable: false),
+                    RefreshToken = table.Column<string>(type: "text", nullable: false),
+                    RefreshTokenExpiryTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     BirthDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Address = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                     PhoneNumber = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: true),
@@ -318,6 +242,12 @@ namespace DDPApi.Migrations
                 {
                     table.PrimaryKey("PK_Persons", x => x.Id);
                     table.ForeignKey(
+                        name: "FK_Persons_Company_CompanyId",
+                        column: x => x.CompanyId,
+                        principalTable: "Company",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
                         name: "FK_Persons_Positions_PositionId",
                         column: x => x.PositionId,
                         principalTable: "Positions",
@@ -333,6 +263,7 @@ namespace DDPApi.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     StationId = table.Column<int>(type: "integer", nullable: true),
                     StagesId = table.Column<int>(type: "integer", nullable: false),
+                    CompanyId = table.Column<int>(type: "integer", nullable: false),
                     OrderDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CustomerName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     DeliveryAddress = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
@@ -380,6 +311,7 @@ namespace DDPApi.Migrations
                 {
                     WorkId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CompanyId = table.Column<int>(type: "integer", nullable: false),
                     StationId = table.Column<int>(type: "integer", nullable: false),
                     StagesId = table.Column<int>(type: "integer", nullable: false),
                     Barcode = table.Column<string>(type: "text", nullable: true),
@@ -433,24 +365,34 @@ namespace DDPApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "SupplierProducts",
+                name: "MachineFaults",
                 columns: table => new
                 {
-                    SupplierProductId = table.Column<int>(type: "integer", nullable: false)
+                    FaultId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    SupplierId = table.Column<int>(type: "integer", nullable: false),
-                    ProductName = table.Column<string>(type: "text", nullable: false),
-                    Price = table.Column<decimal>(type: "numeric", nullable: false),
-                    LeadTimeInDays = table.Column<int>(type: "integer", nullable: false)
+                    MachineId = table.Column<int>(type: "integer", nullable: false),
+                    MachineCode = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    FaultStartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    FaultEndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    FaultDescription = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Cause = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Solution = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    FaultSeverity = table.Column<string>(type: "text", nullable: false),
+                    ReportedBy = table.Column<string>(type: "text", nullable: false),
+                    ResolvedBy = table.Column<string>(type: "text", nullable: false),
+                    IsResolved = table.Column<bool>(type: "boolean", nullable: false),
+                    TotalFault = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SupplierProducts", x => x.SupplierProductId);
+                    table.PrimaryKey("PK_MachineFaults", x => x.FaultId);
                     table.ForeignKey(
-                        name: "FK_SupplierProducts_Suppliers_SupplierId",
-                        column: x => x.SupplierId,
-                        principalTable: "Suppliers",
-                        principalColumn: "SupplierId",
+                        name: "FK_MachineFaults_Machines_MachineId",
+                        column: x => x.MachineId,
+                        principalTable: "Machines",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -458,6 +400,11 @@ namespace DDPApi.Migrations
                 name: "IX_MachineFaults_MachineId",
                 table: "MachineFaults",
                 column: "MachineId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Machines_CompanyId",
+                table: "Machines",
+                column: "CompanyId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Orders_StagesId",
@@ -470,14 +417,14 @@ namespace DDPApi.Migrations
                 column: "StationId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Persons_CompanyId",
+                table: "Persons",
+                column: "CompanyId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Persons_PositionId",
                 table: "Persons",
                 column: "PositionId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SupplierProducts_SupplierId",
-                table: "SupplierProducts",
-                column: "SupplierId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Works_StagesId",
@@ -494,19 +441,10 @@ namespace DDPApi.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Alerts");
-
-            migrationBuilder.DropTable(
-                name: "InventoryMovements");
-
-            migrationBuilder.DropTable(
                 name: "MachineFaults");
 
             migrationBuilder.DropTable(
                 name: "MaintenanceRecords");
-
-            migrationBuilder.DropTable(
-                name: "Notifications");
 
             migrationBuilder.DropTable(
                 name: "Orders");
@@ -521,12 +459,6 @@ namespace DDPApi.Migrations
                 name: "Stores");
 
             migrationBuilder.DropTable(
-                name: "SupplierProducts");
-
-            migrationBuilder.DropTable(
-                name: "WorkforcePlannings");
-
-            migrationBuilder.DropTable(
                 name: "Works");
 
             migrationBuilder.DropTable(
@@ -536,13 +468,13 @@ namespace DDPApi.Migrations
                 name: "Positions");
 
             migrationBuilder.DropTable(
-                name: "Suppliers");
-
-            migrationBuilder.DropTable(
                 name: "Stages");
 
             migrationBuilder.DropTable(
                 name: "Stations");
+
+            migrationBuilder.DropTable(
+                name: "Company");
         }
     }
 }
