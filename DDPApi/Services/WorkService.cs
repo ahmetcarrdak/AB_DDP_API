@@ -13,34 +13,42 @@ namespace DDPApi.Services
     public class WorkService : IWork
     {
         private readonly AppDbContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly int _companyId;
 
-        public WorkService(AppDbContext context)
+        public WorkService(AppDbContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
+            
+            // JWT'den CompanyId'yi al
+            var companyIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("CompanyId");
+            if (companyIdClaim != null && int.TryParse(companyIdClaim.Value, out int companyId))
+            {
+                _companyId = companyId;
+            }
         }
 
         public async Task<IEnumerable<Work>> GetAllWorksAsync()
         {
-            return await _context.Works.AsNoTracking().ToListAsync();
-        }
-
-        public async Task<IEnumerable<WorkDto>> GetActiveWorksAsync()
-        {
             return await _context.Works
-                .Where(w => w.IsActive ?? false)
-                .Select(w => MapToDto(w))
+                .Where(w => w.CompanyId == _companyId)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
         public async Task<WorkDto> GetWorkByIdAsync(int id)
         {
-            var work = await _context.Works.FindAsync(id);
+            var work = await _context.Works
+                .Where(w => w.CompanyId == _companyId && w.WorkId == id)
+                .FirstOrDefaultAsync();
             return work != null ? MapToDto(work) : null;
         }
 
         public async Task<List<WorkStationDto>> GetWorkStationAsync()
         {
             return await _context.Works
+                .Where(w => w.CompanyId == _companyId)
                 .Select(ws => new WorkStationDto
                 {
                     StationId = ws.StationId,
@@ -58,6 +66,7 @@ namespace DDPApi.Services
             {
                 var work = new Work
                 {
+                    CompanyId = _companyId,
                     // Gönderilen alanları alıyoruz
                     WorkName = workDto.WorkName,
                     Priority = workDto.Priority,
@@ -110,7 +119,10 @@ namespace DDPApi.Services
 
         public async Task<bool> UpdateWorkAsync(WorkDto workDto)
         {
-            var existingWork = await _context.Works.FindAsync(workDto.WorkId);
+            var existingWork = await _context.Works
+                .Where(w => w.CompanyId == _companyId && w.WorkId == workDto.WorkId)
+                .FirstOrDefaultAsync();
+                
             if (existingWork == null)
             {
                 return false;
@@ -157,7 +169,10 @@ namespace DDPApi.Services
 
         public async Task<bool> DeleteWorkAsync(int id)
         {
-            var work = await _context.Works.FindAsync(id);
+            var work = await _context.Works
+                .Where(w => w.CompanyId == _companyId && w.WorkId == id)
+                .FirstOrDefaultAsync();
+                
             if (work == null)
                 return false;
 
@@ -177,7 +192,7 @@ namespace DDPApi.Services
         public async Task<IEnumerable<WorkDto>> GetWorksByEmployeeIdAsync(int employeeId)
         {
             return await _context.Works
-                .Where(w => w.AssignedEmployeeId == employeeId)
+                .Where(w => w.CompanyId == _companyId && w.AssignedEmployeeId == employeeId)
                 .Select(w => MapToDto(w))
                 .ToListAsync();
         }
@@ -185,7 +200,7 @@ namespace DDPApi.Services
         public async Task<IEnumerable<WorkDto>> GetWorksByPriorityAsync(string priority)
         {
             return await _context.Works
-                .Where(w => w.Priority == priority)
+                .Where(w => w.CompanyId == _companyId && w.Priority == priority)
                 .Select(w => MapToDto(w))
                 .ToListAsync();
         }
@@ -193,7 +208,7 @@ namespace DDPApi.Services
         public async Task<IEnumerable<WorkDto>> GetWorksByStatusAsync(int status)
         {
             return await _context.Works
-                .Where(w => w.Status == status)
+                .Where(w => w.CompanyId == _companyId && w.Status == status)
                 .Select(w => MapToDto(w))
                 .ToListAsync();
         }
@@ -201,7 +216,7 @@ namespace DDPApi.Services
         public async Task<IEnumerable<WorkDto>> GetWorksByDateRangeAsync(DateTime startDate, DateTime endDate)
         {
             return await _context.Works
-                .Where(w => w.CreatedDate >= startDate && w.CreatedDate <= endDate)
+                .Where(w => w.CompanyId == _companyId && w.CreatedDate >= startDate && w.CreatedDate <= endDate)
                 .Select(w => MapToDto(w))
                 .ToListAsync();
         }
@@ -209,7 +224,7 @@ namespace DDPApi.Services
         public async Task<IEnumerable<WorkDto>> GetDelayedWorksAsync()
         {
             return await _context.Works
-                .Where(w => w.DueDate < DateTime.Now && (w.CompletionDate == null || w.CompletionDate > w.DueDate))
+                .Where(w => w.CompanyId == _companyId && w.DueDate < DateTime.Now && (w.CompletionDate == null || w.CompletionDate > w.DueDate))
                 .Select(w => MapToDto(w))
                 .ToListAsync();
         }
@@ -217,7 +232,7 @@ namespace DDPApi.Services
         public async Task<IEnumerable<WorkDto>> GetCancelledWorksAsync()
         {
             return await _context.Works
-                .Where(w => w.CancellationDate != null)
+                .Where(w => w.CompanyId == _companyId && w.CancellationDate != null)
                 .Select(w => MapToDto(w))
                 .ToListAsync();
         }
@@ -225,7 +240,7 @@ namespace DDPApi.Services
         public async Task<IEnumerable<WorkDto>> GetRecurringWorksAsync()
         {
             return await _context.Works
-                .Where(w => w.IsRecurring == true)
+                .Where(w => w.CompanyId == _companyId && w.IsRecurring == true)
                 .Select(w => MapToDto(w))
                 .ToListAsync();
         }
@@ -233,7 +248,7 @@ namespace DDPApi.Services
         public async Task<IEnumerable<WorkDto>> GetPendingApprovalWorksAsync()
         {
             return await _context.Works
-                .Where(w => w.RequiresApproval == true && w.Status == 1)
+                .Where(w => w.CompanyId == _companyId && w.RequiresApproval == true && w.Status == 1)
                 .Select(w => MapToDto(w))
                 .ToListAsync();
         }
@@ -241,7 +256,7 @@ namespace DDPApi.Services
         public async Task<IEnumerable<WorkDto>> GetSafetyRiskWorksAsync()
         {
             return await _context.Works
-                .Where(w => w.HasSafetyRisks == true)
+                .Where(w => w.CompanyId == _companyId && w.HasSafetyRisks == true)
                 .Select(w => MapToDto(w))
                 .ToListAsync();
         }
@@ -249,7 +264,7 @@ namespace DDPApi.Services
         public async Task<IEnumerable<WorkDto>> GetWorksByQualityScoreAsync(int minScore)
         {
             return await _context.Works
-                .Where(w => (w.QualityScore ?? 0) >= minScore)
+                .Where(w => w.CompanyId == _companyId && (w.QualityScore ?? 0) >= minScore)
                 .Select(w => MapToDto(w))
                 .ToListAsync();
         }

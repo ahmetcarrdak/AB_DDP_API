@@ -4740,19 +4740,19 @@
     ]
   },
   "packageFolders": {
-    "/Users/ahmetcardak/.nuget/packages/": {}
+    "C:\\Users\\Gokcag\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/ahmetcardak/Desktop/AB_DDP_API/DDPApi/DDPApi.csproj",
+      "projectUniqueName": "C:\\Users\\Gokcag\\Desktop\\AB_DDP_AP\\DDPApi\\DDPApi.csproj",
       "projectName": "DDPApi",
-      "projectPath": "/Users/ahmetcardak/Desktop/AB_DDP_API/DDPApi/DDPApi.csproj",
-      "packagesPath": "/Users/ahmetcardak/.nuget/packages/",
-      "outputPath": "/Users/ahmetcardak/Desktop/AB_DDP_API/DDPApi/obj/",
+      "projectPath": "C:\\Users\\Gokcag\\Desktop\\AB_DDP_AP\\DDPApi\\DDPApi.csproj",
+      "packagesPath": "C:\\Users\\Gokcag\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Gokcag\\Desktop\\AB_DDP_AP\\DDPApi\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/Users/ahmetcardak/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\Gokcag\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -4835,16 +4835,8 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.403/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.406/PortableRuntimeIdentifierGraph.json"
       }
     }
-  },
-  "logs": [
-    {
-      "code": "NU1900",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "Error occurred while getting package vulnerability data: Access to the path '/Users/ahmetcardak/.local/share/NuGet/http-cache/670c1461c29885f9aa22c281d8b7da90845b38e4$ps:_api.nuget.org_v3_index.json/vuln_index.dat-new' is denied."
-    }
-  ]
+  }
 }

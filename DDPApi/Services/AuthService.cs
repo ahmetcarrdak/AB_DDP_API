@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using DDPApi.Models;
 using DDPApi.Data;
 using Microsoft.EntityFrameworkCore;
@@ -18,10 +16,7 @@ namespace DDPApi.Services
             _jwtService = jwtService;
         }
 
-        public async Task<(bool success, string message, string token, Person user, Company company)> Register(
-            string firstName,
-            string lastName,
-            string identityNumber,
+        public async Task<(bool success, string message, Company company)> Register(
             string password,
             string companyName,
             string companyTaxNumber,
@@ -32,19 +27,12 @@ namespace DDPApi.Services
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // Check if user already exists
-                var existingUser = await _context.Persons
-                    .FirstOrDefaultAsync(u => u.IdentityNumber == identityNumber);
-
-                if (existingUser != null)
-                    return (false, "Bu TC Kimlik numarası ile kayıtlı kullanıcı bulunmaktadır.", null, null, null);
-
                 // Check if company exists with same tax number
                 var existingCompany = await _context.Companies
                     .FirstOrDefaultAsync(c => c.TaxNumber == companyTaxNumber);
 
                 if (existingCompany != null)
-                    return (false, "Bu vergi numarası ile kayıtlı firma bulunmaktadır.", null, null, null);
+                    return (false, "Bu vergi numarası ile kayıtlı firma bulunmaktadır.", null);
 
                 // Create new company
                 var company = new Company
@@ -55,47 +43,25 @@ namespace DDPApi.Services
                     PhoneNumber = companyPhone,
                     Email = companyEmail,
                     IsActive = true,
-                    CreatedAt = DateTime.Now,
-                    CompanyId = Guid.NewGuid()
+                    CreatedAt = DateTime.UtcNow,
+                    CompanyId = Guid.NewGuid(),
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(password)
                 };
 
                 _context.Companies.Add(company);
                 await _context.SaveChangesAsync();
-
-                // Create new user
-                var passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
-
-                var user = new Person
-                {
-                    FirstName = firstName,
-                    LastName = lastName,
-                    IdentityNumber = identityNumber,
-                    PasswordHash = passwordHash,
-                    CompanyId = company.CompanyId,
-                    Company = company,
-                    Role = "Admin", // İlk kayıt olan kişi Admin olur
-                    IsActive = true,
-                    HireDate = DateTime.Now
-                };
-
-                _context.Persons.Add(user);
-                await _context.SaveChangesAsync();
-
                 await transaction.CommitAsync();
 
-                // Generate token
-                var token = _jwtService.GenerateToken(user);
-
-                return (true, "Firma ve kullanıcı başarıyla oluşturuldu.", token, user, company);
+                return (true, "Firma başarıyla oluşturuldu.", company);
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return (false, $"Kayıt işlemi sırasında bir hata oluştu: {ex.Message}", null, null, null);
+                return (false, $"Kayıt işlemi sırasında bir hata oluştu: {ex.Message}", null);
             }
         }
 
-        public async Task<(bool success, string message, string token, Person user, Company company)> Login(string identityNumber, string password)
+        public async Task<(bool success, string message, string token, Person user, Company company)> PersonLogin(string identityNumber, string password)
         {
             var user = await _context.Persons
                .Include(c => c.Company)
@@ -110,9 +76,28 @@ namespace DDPApi.Services
             if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
                 return (false, "Şifre hatalı.", null, null, null);
 
-            var token = _jwtService.GenerateToken(user);
+            var token = _jwtService.GeneratePersonToken(user);
 
             return (true, "Giriş başarılı.", token, user, user.Company);
+        }
+
+        public async Task<(bool success, string message, string token, Company company)> CompanyLogin(string taxNumber, string password)
+        {
+            var company = await _context.Companies
+                .FirstOrDefaultAsync(c => c.TaxNumber == taxNumber);
+
+            if (company == null)
+                return (false, "Firma bulunamadı.", null, null);
+
+            if (!company.IsActive)
+                return (false, "Firma hesabı aktif değil.", null, null);
+
+            if (!BCrypt.Net.BCrypt.Verify(password, company.PasswordHash))
+                return (false, "Şifre hatalı.", null, null);
+
+            var token = _jwtService.GenerateCompanyToken(company);
+
+            return (true, "Giriş başarılı.", token, company);
         }
     }
 }

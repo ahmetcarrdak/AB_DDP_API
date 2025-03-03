@@ -10,6 +10,7 @@ namespace DDPApi.Models
     {
         [Key]
         public int StageId { get; set; }
+        public int CompanyId { get; set; }
         public string StageName { get; set; }
     }
 }

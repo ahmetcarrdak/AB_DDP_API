@@ -23,6 +23,7 @@ builder.Services.AddCors(options =>
 
 // Add services to the container
 builder.Services.AddControllers();
+builder.Services.AddHttpContextAccessor();
 
 // Configure JWT Authentication
 builder.Services.AddAuthentication(options =>

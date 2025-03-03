@@ -1,12 +1,15 @@
 using DDPApi.DTO;
 using DDPApi.Interfaces;
 using DDPApi.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DDPApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
+
     public class StoreController : ControllerBase
     {
         private readonly IStore _storeService;

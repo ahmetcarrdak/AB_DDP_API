@@ -9,16 +9,27 @@ namespace DDPApi.Services
     public class StoreService : IStore
     {
         private readonly AppDbContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly int _companyId;
 
-        public StoreService(AppDbContext context)
+        public StoreService(AppDbContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
+            
+            // JWT'den CompanyId'yi al
+            var companyIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("CompanyId");
+            if (companyIdClaim != null && int.TryParse(companyIdClaim.Value, out int companyId))
+            {
+                _companyId = companyId;
+            }
         }
 
         public async Task<bool> AddStoreAsync(Store store)
         {
             try
             {
+                store.CompanyId = _companyId;
                 store.CreatedDate = DateTime.UtcNow;
                 store.UpdatedDate = DateTime.UtcNow;
                 await _context.Stores.AddAsync(store);
@@ -39,7 +50,10 @@ namespace DDPApi.Services
             try
             {
                 // Veritabanından mevcut Store kaydını getir
-                var existingStore = await _context.Stores.FindAsync(storeDto.StoreId);
+                var existingStore = await _context.Stores
+                    .Where(s => s.CompanyId == _companyId && s.StoreId == storeDto.StoreId)
+                    .FirstOrDefaultAsync();
+                    
                 if (existingStore == null) return false;
 
                 // DTO'dan güncellenen alanları mevcut Store kaydına uygula
@@ -82,7 +96,10 @@ namespace DDPApi.Services
         {
             try
             {
-                var store = await _context.Stores.FindAsync(storeId);
+                var store = await _context.Stores
+                    .Where(s => s.CompanyId == _companyId && s.StoreId == storeId)
+                    .FirstOrDefaultAsync();
+                    
                 if (store == null) return false;
 
                 _context.Stores.Remove(store);
@@ -97,57 +114,76 @@ namespace DDPApi.Services
 
         public async Task<Store> GetStoreByIdAsync(int storeId)
         {
-            return await _context.Stores.FindAsync(storeId);
+            return await _context.Stores
+                .Where(s => s.CompanyId == _companyId && s.StoreId == storeId)
+                .FirstOrDefaultAsync();
         }
 
         public async Task<IEnumerable<Store>> GetAllStoresAsync()
         {
-            return await _context.Stores.ToListAsync();
+            return await _context.Stores
+                .Where(s => s.CompanyId == _companyId)
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<Store>> GetActiveStoresAsync()
         {
-            return await _context.Stores.Where(s => s.IsActive).ToListAsync();
+            return await _context.Stores
+                .Where(s => s.CompanyId == _companyId && s.IsActive)
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<Store>> GetStoresByCategoryAsync(string category)
         {
-            return await _context.Stores.Where(s => s.Category == category).ToListAsync();
+            return await _context.Stores
+                .Where(s => s.CompanyId == _companyId && s.Category == category)
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<Store>> GetLowStockItemsAsync()
         {
-            return await _context.Stores.Where(s => s.Quantity <= s.MinimumStockLevel).ToListAsync();
+            return await _context.Stores
+                .Where(s => s.CompanyId == _companyId && s.Quantity <= s.MinimumStockLevel)
+                .ToListAsync();
         }
 
         public async Task<Store> GetStoreByBarcodeAsync(string barcode)
         {
-            return await _context.Stores.FirstOrDefaultAsync(s => s.Barcode == barcode);
+            return await _context.Stores
+                .Where(s => s.CompanyId == _companyId && s.Barcode == barcode)
+                .FirstOrDefaultAsync();
         }
 
         public async Task<IEnumerable<Store>> GetNearExpiryItemsAsync(int daysThreshold)
         {
             var thresholdDate = DateTime.Now.AddDays(daysThreshold);
             return await _context.Stores
-                .Where(s => s.ExpiryDate.HasValue && s.ExpiryDate <= thresholdDate)
+                .Where(s => s.CompanyId == _companyId && s.ExpiryDate.HasValue && s.ExpiryDate <= thresholdDate)
                 .ToListAsync();
         }
 
         public async Task<IEnumerable<Store>> GetStoresByLocationAsync(string location)
         {
-            return await _context.Stores.Where(s => s.Location == location).ToListAsync();
+            return await _context.Stores
+                .Where(s => s.CompanyId == _companyId && s.Location == location)
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<Store>> GetStoresBySupplierAsync(string supplierInfo)
         {
-            return await _context.Stores.Where(s => s.SupplierInfo == supplierInfo).ToListAsync();
+            return await _context.Stores
+                .Where(s => s.CompanyId == _companyId && s.SupplierInfo == supplierInfo)
+                .ToListAsync();
         }
 
         public async Task<bool> UpdateStockQuantityAsync(int storeId, int newQuantity)
         {
             try
             {
-                var store = await _context.Stores.FindAsync(storeId);
+                var store = await _context.Stores
+                    .Where(s => s.CompanyId == _companyId && s.StoreId == storeId)
+                    .FirstOrDefaultAsync();
+                    
                 if (store == null) return false;
 
                 store.Quantity = newQuantity;
@@ -165,7 +201,10 @@ namespace DDPApi.Services
         {
             try
             {
-                var store = await _context.Stores.FindAsync(storeId);
+                var store = await _context.Stores
+                    .Where(s => s.CompanyId == _companyId && s.StoreId == storeId)
+                    .FirstOrDefaultAsync();
+                    
                 if (store == null) return false;
 
                 store.QualityStatus = qualityStatus;
@@ -183,7 +222,10 @@ namespace DDPApi.Services
         {
             try
             {
-                var store = await _context.Stores.FindAsync(storeId);
+                var store = await _context.Stores
+                    .Where(s => s.CompanyId == _companyId && s.StoreId == storeId)
+                    .FirstOrDefaultAsync();
+                    
                 if (store == null) return false;
 
                 store.LastInventoryDate = lastInventoryDate;
@@ -200,14 +242,14 @@ namespace DDPApi.Services
         public async Task<IEnumerable<Store>> SearchStoresByNameAsync(string searchTerm)
         {
             return await _context.Stores
-                .Where(s => s.Name.Contains(searchTerm))
+                .Where(s => s.CompanyId == _companyId && s.Name.Contains(searchTerm))
                 .ToListAsync();
         }
 
         public async Task<IEnumerable<Store>> GetStoresByPriceRangeAsync(decimal minPrice, decimal maxPrice)
         {
             return await _context.Stores
-                .Where(s => s.UnitPrice >= minPrice && s.UnitPrice <= maxPrice)
+                .Where(s => s.CompanyId == _companyId && s.UnitPrice >= minPrice && s.UnitPrice <= maxPrice)
                 .ToListAsync();
         }
     }

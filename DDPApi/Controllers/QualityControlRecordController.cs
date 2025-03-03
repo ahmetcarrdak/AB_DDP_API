@@ -3,11 +3,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using DDPApi.Models;
 using DDPApi.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DDPApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+
     public class QualityControlRecordController : ControllerBase
     {
         private readonly IQualityControlRecord _qualityControlRecordService;

@@ -5,31 +5,44 @@ using System.Threading.Tasks;
 using DDPApi.Interfaces;
 using DDPApi.Models;
 using DDPApi.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace DDPApi.Services
 {
     public class MachineService : IMachine
     {
         private readonly AppDbContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly int _companyId;
 
-        public MachineService(AppDbContext context)
+        public MachineService(AppDbContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
+            
+            // JWT'den CompanyId'yi al
+            var companyIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("CompanyId");
+            if (companyIdClaim != null && int.TryParse(companyIdClaim.Value, out int companyId))
+            {
+                _companyId = companyId;
+            }
         }
 
-        // Yeni bir makine ekler
         public async Task<Machine> AddMachineAsync(Machine machine)
         {
-            machine.CreatedAt = DateTime.UtcNow; // Oluşturma tarihi atanıyor
-            await _context.Machines.AddAsync(machine); // Makineyi ekle
-            await _context.SaveChangesAsync(); // Değişiklikleri kaydet
+            machine.CompanyId = _companyId;
+            machine.CreatedAt = DateTime.UtcNow;
+            await _context.Machines.AddAsync(machine);
+            await _context.SaveChangesAsync();
             return machine;
         }
 
-        // Verilen ID'ye sahip bir makineyi günceller
         public async Task<Machine> UpdateMachineAsync(int machineId, Machine updatedMachine)
         {
-            var machine = await _context.Machines.FindAsync(machineId); // Makineyi bul
+            var machine = await _context.Machines
+                .Where(m => m.CompanyId == _companyId && m.Id == machineId)
+                .FirstOrDefaultAsync();
+
             if (machine != null)
             {
                 machine.Name = updatedMachine.Name;
@@ -38,38 +51,42 @@ namespace DDPApi.Services
                 machine.Model = updatedMachine.Model;
                 machine.PurchaseDate = updatedMachine.PurchaseDate;
                 machine.IsOperational = updatedMachine.IsOperational;
-                machine.UpdatedAt = DateTime.UtcNow; // Güncelleme tarihi atanıyor
+                machine.UpdatedAt = DateTime.UtcNow;
 
-                await _context.SaveChangesAsync(); // Değişiklikleri kaydet
+                await _context.SaveChangesAsync();
             }
 
             return machine;
         }
 
-        // Verilen ID'ye sahip bir makineyi siler
         public async Task<bool> DeleteMachineAsync(int machineId)
         {
-            var machine = await _context.Machines.FindAsync(machineId); // Makineyi bul
+            var machine = await _context.Machines
+                .Where(m => m.CompanyId == _companyId && m.Id == machineId)
+                .FirstOrDefaultAsync();
+
             if (machine != null)
             {
-                _context.Machines.Remove(machine); // Makineyi sil
-                await _context.SaveChangesAsync(); // Değişiklikleri kaydet
+                _context.Machines.Remove(machine);
+                await _context.SaveChangesAsync();
                 return true;
             }
 
             return false;
         }
 
-        // Verilen ID'ye sahip bir makineyi getirir
         public async Task<Machine> GetMachineByIdAsync(int machineId)
         {
-            return await _context.Machines.FindAsync(machineId); // Makineyi bul ve döndür
+            return await _context.Machines
+                .Where(m => m.CompanyId == _companyId && m.Id == machineId)
+                .FirstOrDefaultAsync();
         }
 
-        // Tüm makineleri getirir
         public async Task<IEnumerable<Machine>> GetAllMachinesAsync()
         {
-            return await Task.FromResult(_context.Machines.ToList()); // Tüm makineleri döndür
+            return await _context.Machines
+                .Where(m => m.CompanyId == _companyId)
+                .ToListAsync();
         }
     }
 }

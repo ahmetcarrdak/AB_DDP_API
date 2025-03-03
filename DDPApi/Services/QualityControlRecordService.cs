@@ -4,20 +4,32 @@ using Microsoft.EntityFrameworkCore;
 using DDPApi.Models; 
 using DDPApi.Data; 
 using DDPApi.Interfaces;
+using System.Linq;
 
 namespace DDPApi.Services
 {
     public class QualityControlRecordService : IQualityControlRecord
     {
         private readonly AppDbContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly int _companyId;
 
-        public QualityControlRecordService(AppDbContext context)
+        public QualityControlRecordService(AppDbContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
+            
+            // JWT'den CompanyId'yi al
+            var companyIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("CompanyId");
+            if (companyIdClaim != null && int.TryParse(companyIdClaim.Value, out int companyId))
+            {
+                _companyId = companyId;
+            }
         }
 
         public async Task<QualityControlRecord> AddQualityControlRecordAsync(QualityControlRecord qualityControlRecord)
         {
+            qualityControlRecord.CompanyId = _companyId;
             _context.QualityControlRecords.Add(qualityControlRecord);
             await _context.SaveChangesAsync();
             return qualityControlRecord;
@@ -25,7 +37,10 @@ namespace DDPApi.Services
 
         public async Task<QualityControlRecord> UpdateQualityControlRecordAsync(int id, QualityControlRecord qualityControlRecord)
         {
-            var existingRecord = await _context.QualityControlRecords.FindAsync(id);
+            var existingRecord = await _context.QualityControlRecords
+                .Where(r => r.CompanyId == _companyId && r.QualityControlRecordId == id)
+                .FirstOrDefaultAsync();
+
             if (existingRecord != null)
             {
                 existingRecord.ProductId = qualityControlRecord.ProductId;
@@ -42,7 +57,10 @@ namespace DDPApi.Services
 
         public async Task<bool> DeleteQualityControlRecordAsync(int id)
         {
-            var record = await _context.QualityControlRecords.FindAsync(id);
+            var record = await _context.QualityControlRecords
+                .Where(r => r.CompanyId == _companyId && r.QualityControlRecordId == id)
+                .FirstOrDefaultAsync();
+
             if (record != null)
             {
                 _context.QualityControlRecords.Remove(record);
@@ -54,12 +72,16 @@ namespace DDPApi.Services
 
         public async Task<QualityControlRecord> GetQualityControlRecordByIdAsync(int id)
         {
-            return await _context.QualityControlRecords.FindAsync(id);
+            return await _context.QualityControlRecords
+                .Where(r => r.CompanyId == _companyId && r.QualityControlRecordId == id)
+                .FirstOrDefaultAsync();
         }
 
         public async Task<IEnumerable<QualityControlRecord>> GetAllQualityControlRecordsAsync()
         {
-            return await _context.QualityControlRecords.ToListAsync();
+            return await _context.QualityControlRecords
+                .Where(r => r.CompanyId == _companyId)
+                .ToListAsync();
         }
     }
 }

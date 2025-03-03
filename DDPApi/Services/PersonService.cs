@@ -10,19 +10,29 @@ using System.Linq;
 public class PersonService : IPerson
 {
     private readonly AppDbContext _context;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<PersonService> _logger;
+    private readonly int _companyId;
 
-    public PersonService(AppDbContext context, ILogger<PersonService> logger)
+    public PersonService(AppDbContext context, IHttpContextAccessor httpContextAccessor, ILogger<PersonService> logger)
     {
         _context = context;
+        _httpContextAccessor = httpContextAccessor;
         _logger = logger;
+        
+        // JWT'den CompanyId'yi al
+        var companyIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("CompanyId");
+        if (companyIdClaim != null && int.TryParse(companyIdClaim.Value, out int companyId))
+        {
+            _companyId = companyId;
+        }
     }
 
     public async Task<PersonDto> GetPersonByIdAsync(int id)
     {
         var person = await _context.Persons
             .Include(p => p.Position)
-            .FirstOrDefaultAsync(p => p.Id == id);
+            .FirstOrDefaultAsync(p => p.CompanyId == _companyId && p.Id == id);
         return MapToDto(person);
     }
 
@@ -30,6 +40,7 @@ public class PersonService : IPerson
     {
         var persons = await _context.Persons
             .Include(p => p.Position)
+            .Where(p => p.CompanyId == _companyId)
             .ToListAsync();
         return persons.Select(MapToDto).ToList();
     }
@@ -37,6 +48,7 @@ public class PersonService : IPerson
     public async Task<PersonDto> AddPersonAsync(PersonDto personDto)
     {
         var person = MapToPerson(personDto);
+        person.CompanyId = _companyId;
         await _context.Persons.AddAsync(person);
         await _context.SaveChangesAsync();
         return MapToDto(person);
@@ -45,7 +57,9 @@ public class PersonService : IPerson
     public async Task<PersonDto> UpdatePersonAsync(PersonUpdateDto personDto)
     {
         // Güncellenecek personeli veritabanından al
-        var person = await _context.Persons.FindAsync(personDto.Id);
+        var person = await _context.Persons
+            .Where(p => p.CompanyId == _companyId && p.Id == personDto.Id)
+            .FirstOrDefaultAsync();
 
         if (person == null)
         {
@@ -65,7 +79,10 @@ public class PersonService : IPerson
 
     public async Task<bool> DeletePersonAsync(int id)
     {
-        var person = await _context.Persons.FindAsync(id);
+        var person = await _context.Persons
+            .Where(p => p.CompanyId == _companyId && p.Id == id)
+            .FirstOrDefaultAsync();
+            
         if (person == null) return false;
 
         _context.Persons.Remove(person);
@@ -81,7 +98,10 @@ public class PersonService : IPerson
         var personIds = personUpdates.Select(p => p.Id).ToList();
 
         // Veritabanından ilgili personelleri çek
-        var persons = await _context.Persons.Where(p => personIds.Contains(p.Id)).ToListAsync();
+        var persons = await _context.Persons
+            .Where(p => p.CompanyId == _companyId && personIds.Contains(p.Id))
+            .ToListAsync();
+            
         if (persons.Count == 0) return false;
 
         // Her bir personel için güncelleme yap
@@ -110,7 +130,6 @@ public class PersonService : IPerson
     {
         throw new NotImplementedException();
     }
-
 
     private PersonDto MapToDto(Person person)
     {

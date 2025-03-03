@@ -37,9 +37,15 @@ namespace DDPApi.Controllers
             public string CompanyEmail { get; set; }
         }
 
-        public class LoginRequest
+        public class PersonLoginRequest
         {
             public string IdentityNumber { get; set; }
+            public string Password { get; set; }
+        }
+
+        public class CompanyLoginRequest
+        {
+            public string TaxNumber { get; set; }
             public string Password { get; set; }
         }
 
@@ -55,10 +61,7 @@ namespace DDPApi.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest request)
         {
-            var (success, message, token, user, company) = await _authService.Register(
-                request.FirstName,
-                request.LastName,
-                request.IdentityNumber,
+            var (success, message, company) = await _authService.Register(
                 request.Password,
                 request.CompanyName,
                 request.CompanyTaxNumber,
@@ -73,16 +76,14 @@ namespace DDPApi.Controllers
             {
                 Success = true,
                 Message = message,
-                Token = token,
-                User = user,
                 Company = company
             });
         }
 
-        [HttpPost("login")]
-        public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
+        [HttpPost("person/login")]
+        public async Task<ActionResult<AuthResponse>> PersonLogin([FromBody] PersonLoginRequest request)
         {
-            var (success, message, token, user, company) = await _authService.Login(request.IdentityNumber, request.Password);
+            var (success, message, token, user, company) = await _authService.PersonLogin(request.IdentityNumber, request.Password);
 
             if (!success)
                 return Unauthorized(new AuthResponse { Success = false, Message = message });
@@ -90,9 +91,26 @@ namespace DDPApi.Controllers
             return Ok(new AuthResponse
             {
                 Success = true,
-                Message = "Giriş başarılı",
+                Message = message,
                 Token = token,
                 User = user,
+                Company = company
+            });
+        }
+
+        [HttpPost("company/login")]
+        public async Task<ActionResult<AuthResponse>> CompanyLogin([FromBody] CompanyLoginRequest request)
+        {
+            var (success, message, token, company) = await _authService.CompanyLogin(request.TaxNumber, request.Password);
+
+            if (!success)
+                return Unauthorized(new AuthResponse { Success = false, Message = message });
+
+            return Ok(new AuthResponse
+            {
+                Success = true,
+                Message = message,
+                Token = token,
                 Company = company
             });
         }

@@ -13,10 +13,20 @@ namespace DDPApi.Services
     public class OrderService : IOrder
     {
         private readonly AppDbContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly int _companyId;
 
-        public OrderService(AppDbContext context)
+        public OrderService(AppDbContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
+            
+            // JWT'den CompanyId'yi al
+            var companyIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("CompanyId");
+            if (companyIdClaim != null && int.TryParse(companyIdClaim.Value, out int companyId))
+            {
+                _companyId = companyId;
+            }
         }
 
         private OrderDto MapToDto(Order order)
@@ -80,27 +90,34 @@ namespace DDPApi.Services
                 DiscountAmount = orderDto.DiscountAmount,
                 TaxAmount = orderDto.TaxAmount,
                 InvoiceNumber = orderDto.InvoiceNumber,
+                CompanyId = _companyId
             };
         }
 
         // Tüm siparişleri getirir
         public async Task<IEnumerable<OrderDto>> GetAllOrdersAsync()
         {
-            var orders = await _context.Orders.ToListAsync();
+            var orders = await _context.Orders
+                .Where(o => o.CompanyId == _companyId)
+                .ToListAsync();
             return orders.Select(MapToDto);
         }
 
         // Aktif siparişleri getirir
         public async Task<IEnumerable<OrderDto>> GetActiveOrdersAsync()
         {
-            var orders = await _context.Orders.Where(o => o.IsActive).ToListAsync();
+            var orders = await _context.Orders
+                .Where(o => o.CompanyId == _companyId && o.IsActive)
+                .ToListAsync();
             return orders.Select(MapToDto);
         }
 
         // ID'ye göre sipariş getirir
         public async Task<OrderDto> GetOrderByIdAsync(int id)
         {
-            var order = await _context.Orders.FindAsync(id);
+            var order = await _context.Orders
+                .Where(o => o.CompanyId == _companyId && o.OrderId == id)
+                .FirstOrDefaultAsync();
             return order == null ? null : MapToDto(order);
         }
 
@@ -125,7 +142,9 @@ namespace DDPApi.Services
         {
             try
             {
-                var existingOrder = await _context.Orders.FindAsync(orderDto.OrderId);
+                var existingOrder = await _context.Orders
+                    .Where(o => o.CompanyId == _companyId && o.OrderId == orderDto.OrderId)
+                    .FirstOrDefaultAsync();
                 if (existingOrder == null) return false;
 
                 var updatedOrder = MapToEntity(orderDto);
@@ -142,7 +161,9 @@ namespace DDPApi.Services
         // Sipariş siler
         public async Task<bool> DeleteOrderAsync(int id)
         {
-            var order = await _context.Orders.FindAsync(id);
+            var order = await _context.Orders
+                .Where(o => o.CompanyId == _companyId && o.OrderId == id)
+                .FirstOrDefaultAsync();
             if (order == null)
                 return false;
 
@@ -161,7 +182,9 @@ namespace DDPApi.Services
         // Belirli bir müşterinin siparişlerini getirir
         public async Task<IEnumerable<OrderDto>> GetOrdersByCustomerIdAsync(int customerId)
         {
-            var orders = await _context.Orders.Where(o => o.OrderId == customerId).ToListAsync();
+            var orders = await _context.Orders
+                .Where(o => o.CompanyId == _companyId && o.OrderId == customerId)
+                .ToListAsync();
             return orders.Select(MapToDto);
         }
 
@@ -169,6 +192,7 @@ namespace DDPApi.Services
         public async Task<List<OrderStationDto>> GetOrderStationAsync()
         {
             return await _context.Orders
+                .Where(o => o.CompanyId == _companyId)
                 .Select(o => new OrderStationDto
                 {
                     StationId = o.StationId,
@@ -190,7 +214,7 @@ namespace DDPApi.Services
         public async Task<IEnumerable<OrderDto>> GetOrdersByDateRangeAsync(DateTime startDate, DateTime endDate)
         {
             var orders = await _context.Orders
-                .Where(o => o.OrderDate >= startDate && o.OrderDate <= endDate)
+                .Where(o => o.CompanyId == _companyId && o.OrderDate >= startDate && o.OrderDate <= endDate)
                 .ToListAsync();
             return orders.Select(MapToDto);
         }
@@ -198,7 +222,9 @@ namespace DDPApi.Services
         // Belirli bir duruma sahip siparişleri getirir
         public async Task<IEnumerable<OrderDto>> GetOrdersByStatusAsync(int status)
         {
-            var orders = await _context.Orders.Where(o => o.OrderStatus == status).ToListAsync();
+            var orders = await _context.Orders
+                .Where(o => o.CompanyId == _companyId && o.OrderStatus == status)
+                .ToListAsync();
             return orders.Select(MapToDto);
         }
 
@@ -206,6 +232,7 @@ namespace DDPApi.Services
         public async Task<IEnumerable<object>> GetOrderStatusesAsync()
         {
             var orderStatuses = await _context.Orders
+                .Where(o => o.CompanyId == _companyId)
                 .GroupBy(o => o.OrderStatus)
                 .Select(g => new
                 {
@@ -220,39 +247,48 @@ namespace DDPApi.Services
             return orderStatuses;
         }
 
-
         // Ödenmemiş siparişleri getirir
         public async Task<IEnumerable<OrderDto>> GetUnpaidOrdersAsync()
         {
-            var orders = await _context.Orders.Where(o => !o.IsPaid).ToListAsync();
+            var orders = await _context.Orders
+                .Where(o => o.CompanyId == _companyId && !o.IsPaid)
+                .ToListAsync();
             return orders.Select(MapToDto);
         }
 
         // Belirli bir personele atanmış siparişleri getirir
         public async Task<IEnumerable<OrderDto>> GetOrdersByEmployeeIdAsync(int employeeId)
         {
-            var orders = await _context.Orders.Where(o => o.AssignedEmployeeId == employeeId).ToListAsync();
+            var orders = await _context.Orders
+                .Where(o => o.CompanyId == _companyId && o.AssignedEmployeeId == employeeId)
+                .ToListAsync();
             return orders.Select(MapToDto);
         }
 
         // Öncelik durumuna göre siparişleri getirir
         public async Task<IEnumerable<OrderDto>> GetOrdersByPriorityAsync(string priority)
         {
-            var orders = await _context.Orders.Where(o => o.Priority == priority).ToListAsync();
+            var orders = await _context.Orders
+                .Where(o => o.CompanyId == _companyId && o.Priority == priority)
+                .ToListAsync();
             return orders.Select(MapToDto);
         }
 
         // Sipariş kaynağına göre siparişleri getirir
         public async Task<IEnumerable<OrderDto>> GetOrdersBySourceAsync(string source)
         {
-            var orders = await _context.Orders.Where(o => o.OrderSource == source).ToListAsync();
+            var orders = await _context.Orders
+                .Where(o => o.CompanyId == _companyId && o.OrderSource == source)
+                .ToListAsync();
             return orders.Select(MapToDto);
         }
 
         // Fatura numarasına göre sipariş getirir
         public async Task<OrderDto> GetOrderByInvoiceNumberAsync(string invoiceNumber)
         {
-            var order = await _context.Orders.FirstOrDefaultAsync(o => o.InvoiceNumber == invoiceNumber);
+            var order = await _context.Orders
+                .Where(o => o.CompanyId == _companyId && o.InvoiceNumber == invoiceNumber)
+                .FirstOrDefaultAsync();
             return order == null ? null : MapToDto(order);
         }
 
@@ -261,7 +297,7 @@ namespace DDPApi.Services
         {
             var currentDate = DateTime.Now;
             var orders = await _context.Orders
-                .Where(o => o.EstimatedDeliveryDate < currentDate && o.ActualDeliveryDate == null)
+                .Where(o => o.CompanyId == _companyId && o.EstimatedDeliveryDate < currentDate && o.ActualDeliveryDate == null)
                 .ToListAsync();
             return orders.Select(MapToDto);
         }
@@ -269,7 +305,9 @@ namespace DDPApi.Services
         // İptal edilen siparişleri getirir
         public async Task<IEnumerable<OrderDto>> GetCancelledOrdersAsync()
         {
-            var orders = await _context.Orders.Where(o => !string.IsNullOrEmpty(o.CancellationReason)).ToListAsync();
+            var orders = await _context.Orders
+                .Where(o => o.CompanyId == _companyId && !string.IsNullOrEmpty(o.CancellationReason))
+                .ToListAsync();
             return orders.Select(MapToDto);
         }
 
@@ -279,7 +317,9 @@ namespace DDPApi.Services
             try
             {
                 // Order'ı DB'den bul
-                var order = await _context.Orders.FindAsync(orderId);
+                var order = await _context.Orders
+                    .Where(o => o.CompanyId == _companyId && o.OrderId == orderId)
+                    .FirstOrDefaultAsync();
 
                 if (order == null)
                 {
@@ -303,6 +343,5 @@ namespace DDPApi.Services
                 return false;
             }
         }
-
     }
 }

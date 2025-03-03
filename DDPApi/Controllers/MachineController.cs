@@ -1,13 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using DDPApi.Data;
+using DDPApi.Interfaces;
 using DDPApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace DDPApi.Controllers
 {
@@ -16,38 +10,29 @@ namespace DDPApi.Controllers
     [ApiController]
     public class MachineController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IMachine _machineService;
 
-        public MachineController(AppDbContext context)
+        public MachineController(IMachine machineService)
         {
-            _context = context;
-        }
-
-        private int GetCompanyId()
-        {
-            return int.Parse(User.FindFirst("CompanyId")?.Value ?? "0");
+            _machineService = machineService;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Machine>>> GetMachines()
         {
-            var companyId = GetCompanyId();
-            return await _context.Machines
-                .Where(m => m.CompanyId == companyId)
-                .ToListAsync();
+            var machines = await _machineService.GetAllMachinesAsync();
+            return Ok(machines);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Machine>> GetMachine(int id)
         {
-            var companyId = GetCompanyId();
-            var machine = await _context.Machines
-                .FirstOrDefaultAsync(m => m.Id == id && m.CompanyId == companyId);
+            var machine = await _machineService.GetMachineByIdAsync(id);
 
             if (machine == null)
                 return NotFound();
 
-            return machine;
+            return Ok(machine);
         }
 
         [HttpPut("{id}")]
@@ -56,26 +41,10 @@ namespace DDPApi.Controllers
             if (id != machine.Id)
                 return BadRequest();
 
-            var companyId = GetCompanyId();
-            var existingMachine = await _context.Machines
-                .FirstOrDefaultAsync(m => m.Id == id && m.CompanyId == companyId);
+            var updatedMachine = await _machineService.UpdateMachineAsync(id, machine);
 
-            if (existingMachine == null)
+            if (updatedMachine == null)
                 return NotFound();
-
-            machine.CompanyId = companyId; // Ensure company ID is preserved
-            _context.Entry(existingMachine).CurrentValues.SetValues(machine);
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!MachineExists(id))
-                    return NotFound();
-                throw;
-            }
 
             return NoContent();
         }
@@ -83,33 +52,19 @@ namespace DDPApi.Controllers
         [HttpPost]
         public async Task<ActionResult<Machine>> CreateMachine(Machine machine)
         {
-            machine.CompanyId = GetCompanyId();
-            _context.Machines.Add(machine);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetMachine), new { id = machine.Id }, machine);
+            var createdMachine = await _machineService.AddMachineAsync(machine);
+            return CreatedAtAction(nameof(GetMachine), new { id = createdMachine.Id }, createdMachine);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteMachine(int id)
         {
-            var companyId = GetCompanyId();
-            var machine = await _context.Machines
-                .FirstOrDefaultAsync(m => m.Id == id && m.CompanyId == companyId);
+            var result = await _machineService.DeleteMachineAsync(id);
 
-            if (machine == null)
+            if (!result)
                 return NotFound();
 
-            _context.Machines.Remove(machine);
-            await _context.SaveChangesAsync();
-
             return NoContent();
-        }
-
-        private bool MachineExists(int id)
-        {
-            var companyId = GetCompanyId();
-            return _context.Machines.Any(e => e.Id == id && e.CompanyId == companyId);
         }
     }
 }

@@ -11,9 +11,6 @@ namespace DDPApi.Interfaces
         // Tüm işleri getirir
         Task<IEnumerable<Work>> GetAllWorksAsync();
 
-        // Aktif işleri getirir
-        Task<IEnumerable<WorkDto>> GetActiveWorksAsync();
-
         // ID'ye göre iş getirir
         Task<WorkDto> GetWorkByIdAsync(int id);
         

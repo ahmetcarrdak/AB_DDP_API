@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using DDPApi.Interfaces;
 using DDPApi.Models;
 using DDPApi.Data;
@@ -12,101 +8,161 @@ namespace DDPApi.Services
     public class MachineFaultService : IMachineFault
     {
         private readonly AppDbContext _context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly int _companyId;
 
-        public MachineFaultService(AppDbContext context)
+        public MachineFaultService(AppDbContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
+            
+            // JWT'den CompanyId'yi al
+            var companyIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("CompanyId");
+            if (companyIdClaim != null && int.TryParse(companyIdClaim.Value, out int companyId))
+            {
+                _companyId = companyId;
+            }
         }
-
+        
         public async Task<MachineFault> AddFaultAsync(MachineFault fault)
         {
-            fault.CreatedAt = DateTime.UtcNow; // Oluşturma tarihini ayarla
+            // CompanyId kontrolü
+            if (fault.Machine != null && fault.Machine.CompanyId != _companyId)
+            {
+                throw new UnauthorizedAccessException("Bu şirkete ait olmayan makine için arıza kaydı oluşturamazsınız.");
+            }
+            
+            // Makine bilgisini kontrol et ve doğrula
+            var machine = await _context.Machines.FindAsync(fault.MachineId);
+            if (machine == null || machine.CompanyId != _companyId)
+            {
+                throw new UnauthorizedAccessException("Bu şirkete ait olmayan makine için arıza kaydı oluşturamazsınız.");
+            }
+            
+            fault.CreatedAt = DateTime.UtcNow;
             await _context.MachineFaults.AddAsync(fault);
-            await _context.SaveChangesAsync(); // Veritabanına kaydet
+            await _context.SaveChangesAsync();
             return fault;
         }
 
         public async Task<MachineFault> UpdateFaultAsync(int faultId, MachineFault updatedFault)
         {
-            var fault = await _context.MachineFaults.FindAsync(faultId);
-            if (fault != null)
+            var fault = await _context.MachineFaults
+                .Include(f => f.Machine)
+                .FirstOrDefaultAsync(f => f.FaultId == faultId && f.Machine.CompanyId == _companyId);
+                
+            if (fault == null)
             {
-                fault.MachineId = updatedFault.MachineId;
-                fault.FaultDescription = updatedFault.FaultDescription;
-                fault.IsResolved = updatedFault.IsResolved;
-                fault.UpdatedAt = DateTime.UtcNow;
-
-                await _context.SaveChangesAsync(); // Güncellemeleri veritabanına kaydet
+                return null; // Bu şirkete ait arıza bulunamadı
+            }
+            
+            // Yeni makine bilgisini doğrula
+            if (updatedFault.MachineId != fault.MachineId)
+            {
+                var newMachine = await _context.Machines.FindAsync(updatedFault.MachineId);
+                if (newMachine == null || newMachine.CompanyId != _companyId)
+                {
+                    throw new UnauthorizedAccessException("Bu şirkete ait olmayan makine için arıza kaydı güncelleyemezsiniz.");
+                }
             }
 
+            fault.MachineId = updatedFault.MachineId;
+            fault.FaultDescription = updatedFault.FaultDescription;
+            fault.IsResolved = updatedFault.IsResolved;
+            fault.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
             return fault;
         }
 
         public async Task<bool> DeleteFaultAsync(int faultId)
         {
-            var fault = await _context.MachineFaults.FindAsync(faultId);
-            if (fault != null)
+            var fault = await _context.MachineFaults
+                .Include(f => f.Machine)
+                .FirstOrDefaultAsync(f => f.FaultId == faultId && f.Machine.CompanyId == _companyId);
+                
+            if (fault == null)
             {
-                _context.MachineFaults.Remove(fault);
-                await _context.SaveChangesAsync(); // Veritabanından kaldır
-                return true;
+                return false; // Bu şirkete ait arıza bulunamadı
             }
 
-            return false;
+            _context.MachineFaults.Remove(fault);
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<MachineFault> GetFaultByIdAsync(int faultId)
         {
-            return await _context.MachineFaults.FindAsync(faultId); // ID'ye göre kayıt getir
+            return await _context.MachineFaults
+                .Include(f => f.Machine)
+                .FirstOrDefaultAsync(f => f.FaultId == faultId && f.Machine.CompanyId == _companyId);
         }
 
         public async Task<IEnumerable<MachineFault>> GetAllFaultsAsync()
         {
             return await _context.MachineFaults
-                                 .Include(f => f.Machine)  // Machine ile ilişkiyi dahil ediyoruz
-                                 .ToListAsync();  // Asenkron sorguyu çalıştırıyoruz
+                .Include(f => f.Machine)
+                .Where(f => f.Machine.CompanyId == _companyId)
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<MachineFault>> GetUnresolvedFaultsAsync()
         {
-            return await Task.FromResult(_context.MachineFaults.Where(f => !f.IsResolved).ToList());
+            return await _context.MachineFaults
+                .Include(f => f.Machine)
+                .Where(f => !f.IsResolved && f.Machine.CompanyId == _companyId)
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<MachineFault>> GetResolvedFaultsAsync()
         {
-            return await Task.FromResult(_context.MachineFaults.Where(f => f.IsResolved).ToList());
+            return await _context.MachineFaults
+                .Include(f => f.Machine)
+                .Where(f => f.IsResolved && f.Machine.CompanyId == _companyId)
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<MachineFault>> GetFaultsByMachineCodeAsync(string machineCode)
         {
-            return await Task.FromResult(_context.MachineFaults.Where(f => f.MachineCode == machineCode).ToList());
+            return await _context.MachineFaults
+                .Include(f => f.Machine)
+                .Where(f => f.MachineCode == machineCode && f.Machine.CompanyId == _companyId)
+                .ToListAsync();
         }
 
-        // İlgili makinedeki toplam arıza sayısını getirir
         public async Task<int> GetTotalFaultCountByMachineIdAsync(int machineId)
         {
+            // Önce makinenin bu şirkete ait olup olmadığını kontrol et
+            var machine = await _context.Machines.FindAsync(machineId);
+            if (machine == null || machine.CompanyId != _companyId)
+            {
+                return 0; // Bu şirkete ait olmayan makine için 0 dön
+            }
+            
             return await _context.MachineFaults.CountAsync(f => f.MachineId == machineId);
         }
 
-        // En çok arıza yapan 5 makineyi getirir
         public async Task<List<Machine>> GetTop5MachinesWithMostFaultsAsync()
         {
             return await _context.Machines
-                                 .OrderByDescending(m => m.TotalFault)  // Makinenin toplam arıza sayısına göre sıralar
-                                 .Take(5)                               // İlk 5 makineyi alır
-                                 .ToListAsync();
+                .Where(m => m.CompanyId == _companyId)
+                .OrderByDescending(m => m.TotalFault)
+                .Take(5)
+                .ToListAsync();
         }
 
         public async Task<List<Machine>> GetLatest5FaultMachinesAsync()
         {
             var latestFaults = await _context.MachineFaults
-                                              .OrderByDescending(f => f.CreatedAt)  // En son arızalara göre sırala
-                                              .Take(5)                               // İlk 5 kaydı al
-                                              .Select(f => f.Machine)                // İlgili makineleri seç
-                                              .Distinct()                            // Aynı makineler varsa tekilleştir
-                                              .ToListAsync();
+                .Include(f => f.Machine)
+                .Where(f => f.Machine.CompanyId == _companyId)
+                .OrderByDescending(f => f.CreatedAt)
+                .Take(5)
+                .Select(f => f.Machine)
+                .Distinct()
+                .ToListAsync();
+                
             return latestFaults;
         }
-
     }
 }

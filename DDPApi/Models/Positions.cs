@@ -10,6 +10,7 @@ namespace DDPApi.Models
     {
         [Key]
         public int PositionId { get; set; }
+        public int CompanyId { get; set; }
         public string PositionName { get; set; }
         public string PositionDescription { get; set; }
     }

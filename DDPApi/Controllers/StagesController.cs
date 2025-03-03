@@ -4,12 +4,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using DDPApi.Interfaces;
 using DDPApi.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DDPApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
+
     public class StagesController : ControllerBase
     {
         private readonly IStages _stagesService;

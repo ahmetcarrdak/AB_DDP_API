@@ -1,11 +1,14 @@
 using DDPApi.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using DDPApi.DTO;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DDPApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
+
     public class WorkController : ControllerBase
     {
         private readonly IWork _workService;
@@ -22,15 +25,7 @@ namespace DDPApi.Controllers
             var works = await _workService.GetAllWorksAsync();
             return Ok(works);
         }
-
-        // GET: api/Work/active
-        [HttpGet("active")]
-        public async Task<ActionResult<IEnumerable<WorkDto>>> GetActiveWorks()
-        {
-            var works = await _workService.GetActiveWorksAsync();
-            return Ok(works);
-        }
-
+        
         // GET: api/Work/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<WorkDto>> GetWork(int id)

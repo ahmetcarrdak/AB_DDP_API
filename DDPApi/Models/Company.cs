@@ -29,13 +29,11 @@ namespace DDPApi.Models
         [StringLength(100)]
         public string Email { get; set; }
 
-        [StringLength(100)]
-        public string WebSite { get; set; }
-
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public bool IsActive { get; set; } = true;
-
+        public string PasswordHash { get; set; }
+        
         // Navigation property
         public virtual ICollection<Person> Employees { get; set; }
     }

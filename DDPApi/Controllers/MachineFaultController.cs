@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using DDPApi.Interfaces;
 using DDPApi.Models;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DDPApi.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class MachineFaultController : ControllerBase
 {

@@ -5,11 +5,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using DDPApi.Interfaces;
 using DDPApi.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DDPApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
+
     public class PositionsController : ControllerBase
     {
         private readonly IPositions _positionsService;

@@ -11,7 +11,8 @@ namespace DDPApi.Services
 {
     public interface IJwtService
     {
-        string GenerateToken(Person user);
+        string GenerateCompanyToken(Company company);
+        string GeneratePersonToken(Person person);
         string GenerateRefreshToken();
         ClaimsPrincipal GetPrincipalFromExpiredToken(string token);
     }
@@ -25,19 +26,45 @@ namespace DDPApi.Services
             _configuration = configuration;
         }
 
-        public string GenerateToken(Person user)
+        public string GenerateCompanyToken(Company company)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.IdentityNumber),
-                new Claim("FirstName", user.FirstName),
-                new Claim("LastName", user.LastName),
-                new Claim(ClaimTypes.Role, user.Role),
-                new Claim("CompanyId", user.CompanyId.ToString())
+                new Claim(ClaimTypes.NameIdentifier, company.Id.ToString()),
+                new Claim(ClaimTypes.Name, company.Name),
+                new Claim("TaxNumber", company.TaxNumber),
+                new Claim(ClaimTypes.Role, "Company"),
+                new Claim("CompanyId", company.Id.ToString())
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["JWT:ValidIssuer"],
+                audience: _configuration["JWT:ValidAudience"],
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(Convert.ToDouble(_configuration["JWT:TokenValidityInMinutes"])),
+                signingCredentials: credentials
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public string GeneratePersonToken(Person person)
+        {
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, person.Id.ToString()),
+                new Claim(ClaimTypes.Name, person.IdentityNumber),
+                new Claim("FirstName", person.FirstName),
+                new Claim("LastName", person.LastName),
+                new Claim(ClaimTypes.Role, person.Role),
+                new Claim("CompanyId", person.CompanyId.ToString()),
+                new Claim("UserType", "Person")
             };
 
             var token = new JwtSecurityToken(
@@ -83,4 +110,4 @@ namespace DDPApi.Services
             return principal;
         }
     }
-} 
+}
