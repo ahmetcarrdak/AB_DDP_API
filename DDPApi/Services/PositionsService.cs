@@ -19,7 +19,7 @@ namespace DDPApi.Services
         {
             _context = context;
             _httpContextAccessor = httpContextAccessor;
-            
+
             // JWT'den CompanyId'yi al
             var companyIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("CompanyId");
             if (companyIdClaim != null && int.TryParse(companyIdClaim.Value, out int companyId))
@@ -31,20 +31,18 @@ namespace DDPApi.Services
         public async Task<List<Positions>> GetAllPositions()
         {
             return await _context.Positions
-                .Where(p => p.CompanyId == _companyId)
                 .ToListAsync();
         }
 
         public async Task<Positions> GetPositionById(int positionId)
         {
             return await _context.Positions
-                .Where(p => p.CompanyId == _companyId && p.PositionId == positionId)
+                .Where(p => p.PositionId == positionId)
                 .FirstOrDefaultAsync();
         }
 
         public async Task<Positions> CreatePosition(Positions position)
         {
-            position.CompanyId = _companyId;
             _context.Positions.Add(position);
             await _context.SaveChangesAsync();
             return position;
@@ -53,7 +51,7 @@ namespace DDPApi.Services
         public async Task<Positions> UpdatePosition(Positions position)
         {
             var existingPosition = await _context.Positions
-                .Where(p => p.CompanyId == _companyId && p.PositionId == position.PositionId)
+                .Where(p => p.PositionId == position.PositionId)
                 .FirstOrDefaultAsync();
 
             if (existingPosition != null)
@@ -69,7 +67,7 @@ namespace DDPApi.Services
         public async Task<bool> DeletePosition(int positionId)
         {
             var position = await _context.Positions
-                .Where(p => p.CompanyId == _companyId && p.PositionId == positionId)
+                .Where(p => p.PositionId == positionId)
                 .FirstOrDefaultAsync();
 
             if (position == null)
