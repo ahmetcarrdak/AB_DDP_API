@@ -35,6 +35,23 @@ public class PersonService : IPerson
             .FirstOrDefaultAsync(p => p.CompanyId == _companyId && p.Id == id);
         return MapToDto(person);
     }
+    
+    public async Task<bool> PersonGetInSession()
+    {
+        var userIdString = _httpContextAccessor.HttpContext?.User?.FindFirst("userId")?.Value;
+
+        if (int.TryParse(userIdString, out var userId))
+        {
+            var person = await _context.Persons
+                .Include(p => p.Position)
+                .FirstOrDefaultAsync(p => p.CompanyId == _companyId && p.Id == userId);
+
+            return person != null;
+        }
+
+        return false;
+    }
+
 
     public async Task<List<PersonDto>> GetAllPersonsAsync()
     {

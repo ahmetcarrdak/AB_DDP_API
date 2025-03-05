@@ -64,6 +64,7 @@ namespace DDPApi.Services
                 new Claim("LastName", person.LastName),
                 new Claim(ClaimTypes.Role, person.Role),
                 new Claim("CompanyId", person.CompanyId.ToString()),
+                new Claim("UserId", person.Id.ToString()),
                 new Claim("UserType", "Person")
             };
 

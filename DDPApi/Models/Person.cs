@@ -39,10 +39,6 @@ namespace DDPApi.Models
         [Required]
         public string Role { get; set; } = "User";
 
-        public string RefreshToken { get; set; }
-        
-        public DateTime? RefreshTokenExpiryTime { get; set; }
-
         public DateTime? BirthDate { get; set; }                     // Doğum tarihi (opsiyonel)
 
         [StringLength(200)]

@@ -17,4 +17,8 @@ public interface IPerson
     Task<bool> DeletePersonAsync(int id);                        // Personeli sil
     
     Task<bool> CollectivePersonUpdateAsync(List<PersonCollectiveUpdateDto> personUpdates);        // Toplu işlem yaparak personel bilgilerini güncelle
+
+    Task<bool> PersonGetInSession();                   // Oturumda olan personelin bilgilerini getir
+    
+   // Task<bool> PersonUpdateInSession(PersonUpdateDto personDto);             // Oturumda personel bilgisini setle
 }
