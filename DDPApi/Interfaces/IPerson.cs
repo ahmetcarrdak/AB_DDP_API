@@ -21,4 +21,5 @@ public interface IPerson
     Task<bool> PersonGetInSession();                   // Oturumda olan personelin bilgilerini getir
     
    // Task<bool> PersonUpdateInSession(PersonUpdateDto personDto);             // Oturumda personel bilgisini setle
+   Task<bool> TerminationUpdate(int personId, DateTime terminationDate);
 }

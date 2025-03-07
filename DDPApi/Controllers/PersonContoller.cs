@@ -102,5 +102,24 @@ namespace DDPApi.Controllers
 
             return Ok("Personel verileri başarıyla güncellendi.");
         }
+        
+        // İşten ayrılma tarihini güncelleme endpoint'i
+        [HttpPut("terminate/{personId}")]
+        public async Task<IActionResult> TerminatePerson(int personId, [FromBody] DateTime terminationDate)
+        {
+            try
+            {
+                var result = await _personService.TerminationUpdate(personId, terminationDate);
+
+                if (!result)
+                    return NotFound("Personel bulunamadı.");
+
+                return Ok("Personel işten ayrılma tarihi güncellendi.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Bir hata oluştu: {ex.Message}");
+            }
+        }
     }
 }

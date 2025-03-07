@@ -16,7 +16,7 @@ namespace DDPApi.Services
             _jwtService = jwtService;
         }
 
-        public async Task<(bool success, string message, Company company)> Register(
+        public async Task<(bool success, string message, string token ,Company company)> Register(
             string password,
             string companyName,
             string companyTaxNumber,
@@ -32,7 +32,7 @@ namespace DDPApi.Services
                     .FirstOrDefaultAsync(c => c.TaxNumber == companyTaxNumber);
 
                 if (existingCompany != null)
-                    return (false, "Bu vergi numarası ile kayıtlı firma bulunmaktadır.", null);
+                    return (false, "Bu vergi numarası ile kayıtlı firma bulunmaktadır.", null, null);
 
                 // Create new company
                 var company = new Company
@@ -51,13 +51,13 @@ namespace DDPApi.Services
                 _context.Companies.Add(company);
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
-
-                return (true, "Firma başarıyla oluşturuldu.", company);
+                var token = _jwtService.GenerateCompanyToken(company);
+                return (true, "Firma başarıyla oluşturuldu.", token,company);
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return (false, $"Kayıt işlemi sırasında bir hata oluştu: {ex.Message}", null);
+                return (false, $"Kayıt işlemi sırasında bir hata oluştu: {ex.Message}", null,null);
             }
         }
 

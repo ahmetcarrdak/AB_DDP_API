@@ -23,10 +23,6 @@ namespace DDPApi.Controllers
 
         public class RegisterRequest
         {
-            // Kullanıcı Bilgileri
-            public string FirstName { get; set; }
-            public string LastName { get; set; }
-            public string IdentityNumber { get; set; }
             public string Password { get; set; }
             
             // Firma Bilgileri
@@ -61,7 +57,7 @@ namespace DDPApi.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest request)
         {
-            var (success, message, company) = await _authService.Register(
+            var (success, message, token,company) = await _authService.Register(
                 request.Password,
                 request.CompanyName,
                 request.CompanyTaxNumber,
@@ -76,7 +72,8 @@ namespace DDPApi.Controllers
             {
                 Success = true,
                 Message = message,
-                Company = company
+                Company = company,
+                Token = token,
             });
         }
 

@@ -142,6 +142,21 @@ public class PersonService : IPerson
         await _context.SaveChangesAsync();
         return true;
     }
+    
+    public async Task<bool> TerminationUpdate(int personId, DateTime terminationDate)
+    {
+        var person = await _context.Persons
+            .Where(p => p.Id == personId)
+            .FirstOrDefaultAsync();
+
+        if (person == null)
+            return false;
+
+        person.TerminationDate = terminationDate;
+        person.IsActive = false;
+        await _context.SaveChangesAsync();
+        return true;
+    }
 
     private DateTime ConvertToUtcDateTime(DateTime? excelRowBirthDate)
     {
