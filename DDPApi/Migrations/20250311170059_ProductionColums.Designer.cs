@@ -3,6 +3,7 @@ using System;
 using DDPApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DDPApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250311170059_ProductionColums")]
+    partial class ProductionColums
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -423,24 +426,12 @@ namespace DDPApi.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CompanyId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("ComplatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("DeletedDate")
+                    b.Property<DateTime>("Date")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<DateTime>("InsertDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("MachineId")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -504,9 +495,6 @@ namespace DDPApi.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("ProductionInstructionId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Status")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");

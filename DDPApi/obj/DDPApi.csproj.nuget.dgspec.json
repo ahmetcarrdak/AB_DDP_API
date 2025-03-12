@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Gokcag\\RiderProjects\\AB_DDP_API\\DDPApi\\DDPApi.csproj": {}
+    "/Users/ahmetcardak/RiderProjects/AB_DDP_API/DDPApi/DDPApi.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Gokcag\\RiderProjects\\AB_DDP_API\\DDPApi\\DDPApi.csproj": {
+    "/Users/ahmetcardak/RiderProjects/AB_DDP_API/DDPApi/DDPApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Gokcag\\RiderProjects\\AB_DDP_API\\DDPApi\\DDPApi.csproj",
+        "projectUniqueName": "/Users/ahmetcardak/RiderProjects/AB_DDP_API/DDPApi/DDPApi.csproj",
         "projectName": "DDPApi",
-        "projectPath": "C:\\Users\\Gokcag\\RiderProjects\\AB_DDP_API\\DDPApi\\DDPApi.csproj",
-        "packagesPath": "C:\\Users\\Gokcag\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Gokcag\\RiderProjects\\AB_DDP_API\\DDPApi\\obj\\",
+        "projectPath": "/Users/ahmetcardak/RiderProjects/AB_DDP_API/DDPApi/DDPApi.csproj",
+        "packagesPath": "/Users/ahmetcardak/.nuget/packages/",
+        "outputPath": "/Users/ahmetcardak/RiderProjects/AB_DDP_API/DDPApi/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Gokcag\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "/Users/ahmetcardak/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -37,7 +37,8 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        }
+        },
+        "SdkAnalysisLevel": "9.0.200"
       },
       "frameworks": {
         "net8.0": {
@@ -97,7 +98,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.406/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.200/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

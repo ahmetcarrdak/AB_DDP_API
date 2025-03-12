@@ -3,6 +3,7 @@ using System;
 using DDPApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DDPApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250307124851_cagriIsMacDb")]
+    partial class cagriIsMacDb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -413,109 +416,6 @@ namespace DDPApi.Migrations
                     b.HasKey("PositionId");
 
                     b.ToTable("Positions");
-                });
-
-            modelBuilder.Entity("DDPApi.Models.ProductionInstruction", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CompanyId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("ComplatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("DeletedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("InsertDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("MachineId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("isComplated")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("isDeleted")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ProductionInstructions");
-                });
-
-            modelBuilder.Entity("DDPApi.Models.ProductionStore", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Barkod")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("ProductionInstructionId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductionInstructionId");
-
-                    b.ToTable("ProductionStores");
-                });
-
-            modelBuilder.Entity("DDPApi.Models.ProductionToMachine", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("EntryDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("ExitDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Line")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("MachineId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ProductionInstructionId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MachineId");
-
-                    b.HasIndex("ProductionInstructionId");
-
-                    b.ToTable("ProductionToMachines");
                 });
 
             modelBuilder.Entity("DDPApi.Models.QualityControlRecord", b =>
@@ -1026,32 +926,6 @@ namespace DDPApi.Migrations
                     b.Navigation("Position");
                 });
 
-            modelBuilder.Entity("DDPApi.Models.ProductionStore", b =>
-                {
-                    b.HasOne("DDPApi.Models.ProductionInstruction", null)
-                        .WithMany("ProductionStores")
-                        .HasForeignKey("ProductionInstructionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("DDPApi.Models.ProductionToMachine", b =>
-                {
-                    b.HasOne("DDPApi.Models.Machine", "Machine")
-                        .WithMany()
-                        .HasForeignKey("MachineId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DDPApi.Models.ProductionInstruction", null)
-                        .WithMany("ProductionToMachines")
-                        .HasForeignKey("ProductionInstructionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Machine");
-                });
-
             modelBuilder.Entity("Order", b =>
                 {
                     b.HasOne("DDPApi.Models.Stages", "Stages")
@@ -1091,13 +965,6 @@ namespace DDPApi.Migrations
             modelBuilder.Entity("DDPApi.Models.Company", b =>
                 {
                     b.Navigation("Employees");
-                });
-
-            modelBuilder.Entity("DDPApi.Models.ProductionInstruction", b =>
-                {
-                    b.Navigation("ProductionStores");
-
-                    b.Navigation("ProductionToMachines");
                 });
 #pragma warning restore 612, 618
         }

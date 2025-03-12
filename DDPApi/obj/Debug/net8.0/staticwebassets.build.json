@@ -1,11 +1,12 @@
 {
   "Version": 1,
-  "Hash": "eAG75I9kovXIbRpqoFkdDlphX9crSsDA1etuEk5n/8o=",
+  "Hash": "dZX21dS4yS6KFrK8AKHARgnrfQoodA29ri/eIKxHxgQ=",
   "Source": "DDPApi",
   "BasePath": "_content/DDPApi",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
   "DiscoveryPatterns": [],
-  "Assets": []
+  "Assets": [],
+  "Endpoints": []
 }

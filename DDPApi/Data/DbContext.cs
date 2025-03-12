@@ -21,6 +21,9 @@ namespace DDPApi.Data
     public DbSet<Positions> Positions { get; set; }
     public DbSet<Stages> Stages { get; set; }
     public DbSet<Company> Companies { get; set; }
+    public DbSet<ProductionInstruction> ProductionInstructions { get; set; }
+    public DbSet<ProductionToMachine> ProductionToMachines { get; set; }
+    public DbSet<ProductionStore> ProductionStores { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

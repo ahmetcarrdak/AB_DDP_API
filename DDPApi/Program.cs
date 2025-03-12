@@ -64,6 +64,7 @@ builder.Services.AddScoped<IPositions, PositionsService>();
 builder.Services.AddScoped<IStages, StagesService>();
 builder.Services.AddScoped<IAuth, AuthService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IProductionInstruction, ProductionInstructionService>();
 
 builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
