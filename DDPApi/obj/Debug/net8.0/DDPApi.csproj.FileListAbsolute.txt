@@ -925,3 +925,6 @@ C:/Users/Gokcag/RiderProjects/AB_DDP_API/DDPApi/obj/Debug/net8.0/ref/DDPApi.dll
 /Users/ahmetcardak/RiderProjects/AB_DDP_API/DDPApi/obj/Debug/net8.0/DDPApi.pdb
 /Users/ahmetcardak/RiderProjects/AB_DDP_API/DDPApi/obj/Debug/net8.0/DDPApi.genruntimeconfig.cache
 /Users/ahmetcardak/RiderProjects/AB_DDP_API/DDPApi/obj/Debug/net8.0/ref/DDPApi.dll
+/Users/ahmetcardak/Desktop/AB_DDP_API/DDPApi/bin/Debug/net8.0/DDPApi.staticwebassets.endpoints.json
+/Users/ahmetcardak/Desktop/AB_DDP_API/DDPApi/obj/Debug/net8.0/staticwebassets.build.endpoints.json
+/Users/ahmetcardak/Desktop/AB_DDP_API/DDPApi/obj/Debug/net8.0/staticwebassets/msbuild.DDPApi.Microsoft.AspNetCore.StaticWebAssetEndpoints.props

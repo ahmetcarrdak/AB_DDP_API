@@ -4745,11 +4745,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/ahmetcardak/RiderProjects/AB_DDP_API/DDPApi/DDPApi.csproj",
+      "projectUniqueName": "/Users/ahmetcardak/Desktop/AB_DDP_API/DDPApi/DDPApi.csproj",
       "projectName": "DDPApi",
-      "projectPath": "/Users/ahmetcardak/RiderProjects/AB_DDP_API/DDPApi/DDPApi.csproj",
+      "projectPath": "/Users/ahmetcardak/Desktop/AB_DDP_API/DDPApi/DDPApi.csproj",
       "packagesPath": "/Users/ahmetcardak/.nuget/packages/",
-      "outputPath": "/Users/ahmetcardak/RiderProjects/AB_DDP_API/DDPApi/obj/",
+      "outputPath": "/Users/ahmetcardak/Desktop/AB_DDP_API/DDPApi/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/ahmetcardak/.nuget/NuGet/NuGet.Config"

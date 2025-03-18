@@ -36,4 +36,15 @@ public class ProductionInstructionController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
+    
+    [HttpPost("process")]
+    public async Task<IActionResult> ProcessMachine([FromQuery] int machineId, [FromQuery] string barcode)
+    {
+        var result = await _productionInstructionService.ProcessMachineOperation(machineId, barcode);
+
+        if (result.Contains("hata") || result.Contains("bulunamadı") || result.Contains("tamamlanmadan"))
+            return BadRequest(result);
+
+        return Ok(result);
+    }
 }

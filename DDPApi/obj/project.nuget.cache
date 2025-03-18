@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "8r7OmcsBIkw=",
+  "dgSpecHash": "5K/rczCTkH4=",
   "success": true,
-  "projectFilePath": "/Users/ahmetcardak/RiderProjects/AB_DDP_API/DDPApi/DDPApi.csproj",
+  "projectFilePath": "/Users/ahmetcardak/Desktop/AB_DDP_API/DDPApi/DDPApi.csproj",
   "expectedPackageFiles": [
     "/Users/ahmetcardak/.nuget/packages/automapper/11.0.0/automapper.11.0.0.nupkg.sha512",
     "/Users/ahmetcardak/.nuget/packages/bcrypt.net-core/1.6.0/bcrypt.net-core.1.6.0.nupkg.sha512",
