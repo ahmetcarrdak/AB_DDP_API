@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using DDPApi.Interfaces;
 using DDPApi.Models;
 using DDPApi.Data;
+using DDPApi.DTO;
 using Microsoft.EntityFrameworkCore;
 
 namespace DDPApi.Services
@@ -37,28 +38,26 @@ namespace DDPApi.Services
             return machine;
         }
 
-        public async Task<Machine> UpdateMachineAsync(int machineId, Machine updatedMachine)
+        public async Task<Machine> UpdateMachineAsync(MachineUpdateDto updatedMachineDto)
         {
             var machine = await _context.Machines
-                .Where(m => m.CompanyId == _companyId && m.Id == machineId)
+                .Where(m => m.CompanyId == updatedMachineDto.CompanyId && m.Id == updatedMachineDto.Id)
                 .FirstOrDefaultAsync();
 
             if (machine != null)
             {
-                machine.Name = updatedMachine.Name;
-                machine.Location = updatedMachine.Location;
-                machine.Manufacturer = updatedMachine.Manufacturer;
-                machine.Model = updatedMachine.Model;
-                machine.PurchaseDate = updatedMachine.PurchaseDate;
-                machine.IsOperational = updatedMachine.IsOperational;
+                machine.Name = updatedMachineDto.Name;
+                machine.Location = updatedMachineDto.Location;
+                machine.Model = updatedMachineDto.Model;
+                machine.SerialNumber = updatedMachineDto.SerialNumber;
+                machine.Manufacturer = updatedMachineDto.Manufacturer;
                 machine.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
             }
-
             return machine;
         }
-
+        
         public async Task<bool> DeleteMachineAsync(int machineId)
         {
             var machine = await _context.Machines

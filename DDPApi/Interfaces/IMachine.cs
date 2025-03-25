@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using DDPApi.DTO;
 using DDPApi.Models;
 
 namespace DDPApi.Interfaces
@@ -10,7 +11,7 @@ namespace DDPApi.Interfaces
         Task<Machine> AddMachineAsync(Machine machine);
 
         // Belirtilen ID'ye sahip bir makineyi günceller.
-        Task<Machine> UpdateMachineAsync(int machineId, Machine updatedMachine);
+        Task<Machine> UpdateMachineAsync(MachineUpdateDto updatedMachineDto);
 
         // Belirtilen ID'ye sahip bir makineyi siler.
         Task<bool> DeleteMachineAsync(int machineId);

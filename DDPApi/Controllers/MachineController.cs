@@ -1,3 +1,4 @@
+using DDPApi.DTO;
 using DDPApi.Interfaces;
 using DDPApi.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -35,18 +36,15 @@ namespace DDPApi.Controllers
             return Ok(machine);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateMachine(int id, Machine machine)
+        [HttpPut]
+        public async Task<IActionResult> UpdateMachine(MachineUpdateDto updatedMachineDto)
         {
-            if (id != machine.Id)
-                return BadRequest();
-
-            var updatedMachine = await _machineService.UpdateMachineAsync(id, machine);
+            var updatedMachine = await _machineService.UpdateMachineAsync(updatedMachineDto);
 
             if (updatedMachine == null)
                 return NotFound();
 
-            return NoContent();
+            return Ok("Updated");
         }
 
         [HttpPost]
