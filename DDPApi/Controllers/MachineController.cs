@@ -48,9 +48,9 @@ namespace DDPApi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Machine>> CreateMachine(Machine machine)
+        public async Task<ActionResult<Machine>> CreateMachine(MachineCreateDto machineDto)
         {
-            var createdMachine = await _machineService.AddMachineAsync(machine);
+            var createdMachine = await _machineService.AddMachineAsync(machineDto);
             return CreatedAtAction(nameof(GetMachine), new { id = createdMachine.Id }, createdMachine);
         }
 

@@ -8,7 +8,7 @@ namespace DDPApi.Interfaces
     public interface IMachine
     {
         // Yeni bir makine ekler.
-        Task<Machine> AddMachineAsync(Machine machine);
+        Task<Machine> AddMachineAsync(MachineCreateDto machineDto);
 
         // Belirtilen ID'ye sahip bir makineyi günceller.
         Task<Machine> UpdateMachineAsync(MachineUpdateDto updatedMachineDto);

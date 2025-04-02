@@ -8,5 +8,5 @@ public interface IProductionInstruction
 {
     Task<ProductionInstruction> CreateProductionInstructionAsync(ProductionInstructionDto instructionDto);
     Task<List<ProductionInstruction>> GetProductionInstructionsByCompanyIdAsync();
-    Task<string> ProcessMachineOperation(int machineId, string barcode);
+    Task<string> ProcessMachineOperation(int machineId, string barcode, int count);
 }

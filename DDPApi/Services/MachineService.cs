@@ -29,12 +29,37 @@ namespace DDPApi.Services
             }
         }
 
-        public async Task<Machine> AddMachineAsync(Machine machine)
+        public async Task<Machine> AddMachineAsync(MachineCreateDto machineDto)
         {
-            machine.CompanyId = _companyId;
-            machine.CreatedAt = DateTime.UtcNow;
+            // Validasyon kontrolü (isteğe bağlı)
+            if (machineDto == null)
+                throw new ArgumentNullException(nameof(machineDto));
+
+            var machine = new Machine
+            {
+                CompanyId = _companyId,
+                Name = machineDto.Name,
+                Model = machineDto.Model,
+                Barcode = machineDto.Barcode,
+                SerialNumber = machineDto.SerialNumber,
+                Manufacturer = machineDto.Manufacturer,
+                PurchaseDate = machineDto.PurchaseDate,
+                PurchasePrice = machineDto.PurchasePrice,
+                Description = machineDto.Description,
+                Location = machineDto.Location,
+                PowerConsumption = machineDto.PowerConsumption,
+                Dimensions = machineDto.Dimensions,
+                Weight = machineDto.Weight,
+                WarrantyPeriod = machineDto.WarrantyPeriod,
+                IsActive = true, // Default değer
+                IsOperational = true, // Default değer
+                CreatedAt = DateTime.UtcNow,
+                TotalFault = 0 // Default değer
+            };
+
             await _context.Machines.AddAsync(machine);
             await _context.SaveChangesAsync();
+
             return machine;
         }
 

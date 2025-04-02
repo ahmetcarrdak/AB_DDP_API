@@ -38,9 +38,9 @@ public class ProductionInstructionController : ControllerBase
     }
     
     [HttpPost("process")]
-    public async Task<IActionResult> ProcessMachine([FromQuery] int machineId, [FromQuery] string barcode)
+    public async Task<IActionResult> ProcessMachine([FromQuery] int machineId, [FromQuery] string barcode, int count)
     {
-        var result = await _productionInstructionService.ProcessMachineOperation(machineId, barcode);
+        var result = await _productionInstructionService.ProcessMachineOperation(machineId, barcode, count);
 
         if (result.Contains("hata") || result.Contains("bulunamadı") || result.Contains("tamamlanmadan"))
             return BadRequest(result);

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DDPApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250311115146_UpdateProductionInstruction")]
-    partial class UpdateProductionInstruction
+    [Migration("20250402001942_initalCreate")]
+    partial class initalCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -84,6 +84,11 @@ namespace DDPApi.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Barcode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<int>("CompanyId")
                         .HasColumnType("integer");
 
@@ -137,10 +142,10 @@ namespace DDPApi.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<DateTime>("PurchaseDate")
+                    b.Property<DateTime?>("PurchaseDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<decimal>("PurchasePrice")
+                    b.Property<decimal?>("PurchasePrice")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("SerialNumber")
@@ -418,6 +423,46 @@ namespace DDPApi.Migrations
                     b.ToTable("Positions");
                 });
 
+            modelBuilder.Entity("DDPApi.Models.ProductToSeans", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BatchSize")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ProductionInstructionId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("barcode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("count")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("isCompleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("machineId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("status")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductionInstructionId");
+
+                    b.ToTable("ProductToSeans");
+                });
+
             modelBuilder.Entity("DDPApi.Models.ProductionInstruction", b =>
                 {
                     b.Property<int>("Id")
@@ -426,16 +471,41 @@ namespace DDPApi.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("Date")
+                    b.Property<string>("Barcode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("ComplatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Count")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("DeletedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTime>("InsertDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("MachineId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("isComplated")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("isDeleted")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -476,10 +546,10 @@ namespace DDPApi.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("EntryDate")
+                    b.Property<DateTime?>("EntryDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("ExitDate")
+                    b.Property<DateTime?>("ExitDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Line")
@@ -489,6 +559,9 @@ namespace DDPApi.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("ProductionInstructionId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -1008,6 +1081,13 @@ namespace DDPApi.Migrations
                     b.Navigation("Position");
                 });
 
+            modelBuilder.Entity("DDPApi.Models.ProductToSeans", b =>
+                {
+                    b.HasOne("DDPApi.Models.ProductionInstruction", null)
+                        .WithMany("ProductToSeans")
+                        .HasForeignKey("ProductionInstructionId");
+                });
+
             modelBuilder.Entity("DDPApi.Models.ProductionStore", b =>
                 {
                     b.HasOne("DDPApi.Models.ProductionInstruction", null)
@@ -1077,6 +1157,8 @@ namespace DDPApi.Migrations
 
             modelBuilder.Entity("DDPApi.Models.ProductionInstruction", b =>
                 {
+                    b.Navigation("ProductToSeans");
+
                     b.Navigation("ProductionStores");
 
                     b.Navigation("ProductionToMachines");

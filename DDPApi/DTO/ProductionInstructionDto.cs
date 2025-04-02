@@ -8,9 +8,10 @@ public class ProductionInstructionDto
     public string Description { get; set; }
     public int CompanyId { get; set; }
     public string Barcode { get; set; }
+    public int Count { get; set; }
 
     public List<ProductionToMachineDto> ProductionToMachines { get; set; } = new List<ProductionToMachineDto>();
-    public List<ProductionStore> ProductionStores { get; set; } = new List<ProductionStore>(); // DTO yerine model kullanılıyor
+    public List<ProductionStore> ProductionStores { get; set; } = new List<ProductionStore>();
 }
 
 public class ProductionToMachineDto

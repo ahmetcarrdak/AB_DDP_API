@@ -1,3 +1,5 @@
+using DDPApi.Services;
+
 namespace DDPApi.Models;
 
 public class ProductionInstruction
@@ -13,7 +15,9 @@ public class ProductionInstruction
     public int isComplated { get; set; } = 0;
     public int isDeleted { get; set; } = 0;
     public int? MachineId { get; set; } = 0;
+    public int Count { get; set; } = 0;
 
     public List<ProductionToMachine> ProductionToMachines { get; set; } = new List<ProductionToMachine>();
     public List<ProductionStore> ProductionStores { get; set; } = new List<ProductionStore>();
+    public List<ProductToSeans> ProductToSeans { get; set; } = new List<ProductToSeans>();
 }

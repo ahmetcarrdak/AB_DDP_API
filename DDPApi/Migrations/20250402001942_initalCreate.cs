@@ -7,29 +7,30 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DDPApi.Migrations
 {
     /// <inheritdoc />
-    public partial class InitalCreate : Migration
+    public partial class initalCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Company",
+                name: "Companies",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CompanyId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     TaxNumber = table.Column<string>(type: "character varying(11)", maxLength: 11, nullable: false),
                     Address = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     PhoneNumber = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     Email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    WebSite = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Company", x => x.Id);
+                    table.PrimaryKey("PK_Companies", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -66,6 +67,29 @@ namespace DDPApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ProductionInstructions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CompanyId = table.Column<int>(type: "integer", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    Barcode = table.Column<string>(type: "text", nullable: false),
+                    InsertDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ComplatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    isComplated = table.Column<int>(type: "integer", nullable: false),
+                    isDeleted = table.Column<int>(type: "integer", nullable: false),
+                    MachineId = table.Column<int>(type: "integer", nullable: true),
+                    Count = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductionInstructions", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "QualityControlRecords",
                 columns: table => new
                 {
@@ -90,6 +114,7 @@ namespace DDPApi.Migrations
                 {
                     StageId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CompanyId = table.Column<int>(type: "integer", nullable: false),
                     StageName = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
@@ -172,31 +197,32 @@ namespace DDPApi.Migrations
                     CompanyId = table.Column<int>(type: "integer", nullable: false),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Model = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Barcode = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     SerialNumber = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Manufacturer = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    PurchaseDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    PurchasePrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    PurchaseDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     LastMaintenanceDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     NextMaintenanceDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Manufacturer = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    PurchasePrice = table.Column<decimal>(type: "numeric(18,2)", nullable: true),
                     Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     Location = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     WarrantyPeriod = table.Column<int>(type: "integer", nullable: true),
                     PowerConsumption = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Dimensions = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Weight = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    TotalFault = table.Column<int>(type: "integer", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     IsOperational = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    TotalFault = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Machines", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Machines_Company_CompanyId",
+                        name: "FK_Machines_Companies_CompanyId",
                         column: x => x.CompanyId,
-                        principalTable: "Company",
+                        principalTable: "Companies",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -215,8 +241,6 @@ namespace DDPApi.Migrations
                     Salt = table.Column<string>(type: "text", nullable: false),
                     Username = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     Role = table.Column<string>(type: "text", nullable: false),
-                    RefreshToken = table.Column<string>(type: "text", nullable: false),
-                    RefreshTokenExpiryTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     BirthDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Address = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                     PhoneNumber = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: true),
@@ -242,9 +266,9 @@ namespace DDPApi.Migrations
                 {
                     table.PrimaryKey("PK_Persons", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Persons_Company_CompanyId",
+                        name: "FK_Persons_Companies_CompanyId",
                         column: x => x.CompanyId,
-                        principalTable: "Company",
+                        principalTable: "Companies",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -253,6 +277,52 @@ namespace DDPApi.Migrations
                         principalTable: "Positions",
                         principalColumn: "PositionId",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductionStores",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ProductionInstructionId = table.Column<int>(type: "integer", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Barkod = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductionStores", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ProductionStores_ProductionInstructions_ProductionInstructi~",
+                        column: x => x.ProductionInstructionId,
+                        principalTable: "ProductionInstructions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductToSeans",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ProductId = table.Column<int>(type: "integer", nullable: false),
+                    count = table.Column<int>(type: "integer", nullable: false),
+                    barcode = table.Column<string>(type: "text", nullable: false),
+                    machineId = table.Column<int>(type: "integer", nullable: false),
+                    BatchSize = table.Column<int>(type: "integer", nullable: false),
+                    isCompleted = table.Column<bool>(type: "boolean", nullable: false),
+                    status = table.Column<int>(type: "integer", nullable: false),
+                    ProductionInstructionId = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductToSeans", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ProductToSeans_ProductionInstructions_ProductionInstruction~",
+                        column: x => x.ProductionInstructionId,
+                        principalTable: "ProductionInstructions",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -396,6 +466,36 @@ namespace DDPApi.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "ProductionToMachines",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ProductionInstructionId = table.Column<int>(type: "integer", nullable: false),
+                    MachineId = table.Column<int>(type: "integer", nullable: false),
+                    Line = table.Column<int>(type: "integer", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    EntryDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ExitDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductionToMachines", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ProductionToMachines_Machines_MachineId",
+                        column: x => x.MachineId,
+                        principalTable: "Machines",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ProductionToMachines_ProductionInstructions_ProductionInstr~",
+                        column: x => x.ProductionInstructionId,
+                        principalTable: "ProductionInstructions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_MachineFaults_MachineId",
                 table: "MachineFaults",
@@ -427,6 +527,26 @@ namespace DDPApi.Migrations
                 column: "PositionId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ProductionStores_ProductionInstructionId",
+                table: "ProductionStores",
+                column: "ProductionInstructionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductionToMachines_MachineId",
+                table: "ProductionToMachines",
+                column: "MachineId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductionToMachines_ProductionInstructionId",
+                table: "ProductionToMachines",
+                column: "ProductionInstructionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductToSeans_ProductionInstructionId",
+                table: "ProductToSeans",
+                column: "ProductionInstructionId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Works_StagesId",
                 table: "Works",
                 column: "StagesId");
@@ -453,6 +573,15 @@ namespace DDPApi.Migrations
                 name: "Persons");
 
             migrationBuilder.DropTable(
+                name: "ProductionStores");
+
+            migrationBuilder.DropTable(
+                name: "ProductionToMachines");
+
+            migrationBuilder.DropTable(
+                name: "ProductToSeans");
+
+            migrationBuilder.DropTable(
                 name: "QualityControlRecords");
 
             migrationBuilder.DropTable(
@@ -462,10 +591,13 @@ namespace DDPApi.Migrations
                 name: "Works");
 
             migrationBuilder.DropTable(
+                name: "Positions");
+
+            migrationBuilder.DropTable(
                 name: "Machines");
 
             migrationBuilder.DropTable(
-                name: "Positions");
+                name: "ProductionInstructions");
 
             migrationBuilder.DropTable(
                 name: "Stages");
@@ -474,7 +606,7 @@ namespace DDPApi.Migrations
                 name: "Stations");
 
             migrationBuilder.DropTable(
-                name: "Company");
+                name: "Companies");
         }
     }
 }
