@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DDPApi.Migrations
 {
     /// <inheritdoc />
-    public partial class initalCreate : Migration
+    public partial class InıtinalCreateDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -214,7 +214,9 @@ namespace DDPApi.Migrations
                     Weight = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     IsOperational = table.Column<bool>(type: "boolean", nullable: false),
-                    TotalFault = table.Column<int>(type: "integer", nullable: false)
+                    TotalFault = table.Column<int>(type: "integer", nullable: false),
+                    IsDeleted = table.Column<int>(type: "integer", nullable: false),
+                    DeletedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {

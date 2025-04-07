@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DDPApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250402001942_initalCreate")]
-    partial class initalCreate
+    [Migration("20250407210935_InıtinalCreateDb")]
+    partial class InıtinalCreateDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -95,6 +95,9 @@ namespace DDPApi.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime>("DeletedDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -107,6 +110,9 @@ namespace DDPApi.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
+
+                    b.Property<int>("IsDeleted")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsOperational")
                         .HasColumnType("boolean");
