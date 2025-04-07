@@ -6,8 +6,7 @@ namespace DDPApi.Models
 {
     public class Machine
     {
-        [Key]
-        public int Id { get; set; }
+        [Key] public int Id { get; set; }
 
         // Zorunlu Temel Bilgiler
         [Required(ErrorMessage = "Şirket ID zorunludur")]
@@ -39,8 +38,7 @@ namespace DDPApi.Models
         [StringLength(100, ErrorMessage = "Üretici bilgisi maksimum 100 karakter olabilir")]
         public string Manufacturer { get; set; }
 
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal? PurchasePrice { get; set; }
+        [Column(TypeName = "decimal(18,2)")] public decimal? PurchasePrice { get; set; }
 
         [StringLength(500, ErrorMessage = "Açıklama maksimum 500 karakter olabilir")]
         public string Description { get; set; }
@@ -63,6 +61,8 @@ namespace DDPApi.Models
         public bool IsActive { get; set; } = true;
         public bool IsOperational { get; set; } = true;
         public int TotalFault { get; set; } = 0;
+        public int IsDeleted { get; set; } = 0;
+        public DateTime DeletedDate { get; set; } = DateTime.UtcNow;
 
         // Navigation Property
         public virtual Company Company { get; set; }

@@ -15,11 +15,15 @@ namespace DDPApi.Interfaces
 
         // Belirtilen ID'ye sahip bir makineyi siler.
         Task<bool> DeleteMachineAsync(int machineId);
+        Task<bool> RestoreMachineAsync(int machineId);
 
         // Belirtilen ID'ye sahip bir makineyi getirir.
         Task<Machine> GetMachineByIdAsync(int machineId);
 
         // Tüm makinelerin listesini getirir.
         Task<IEnumerable<Machine>> GetAllMachinesAsync();
+        
+        // Silinen makineleri getirir 
+        Task<IEnumerable<Machine>> GetDeletedMachinesAsync();
     }
 }

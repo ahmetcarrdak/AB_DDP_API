@@ -91,7 +91,24 @@ namespace DDPApi.Services
 
             if (machine != null)
             {
-                _context.Machines.Remove(machine);
+                machine.IsDeleted = 1; // Soft delete işlemi
+                machine.DeletedDate = DateTime.UtcNow; // Silinme tarihini kaydetmek için
+                await _context.SaveChangesAsync();
+                return true;
+            }
+
+            return false;
+        }
+        
+        public async Task<bool> RestoreMachineAsync(int machineId)
+        {
+            var machine = await _context.Machines
+                .Where(m => m.CompanyId == _companyId && m.Id == machineId)
+                .FirstOrDefaultAsync();
+
+            if (machine != null)
+            {
+                machine.IsDeleted = 0; // Soft delete işlemi
                 await _context.SaveChangesAsync();
                 return true;
             }
@@ -106,10 +123,19 @@ namespace DDPApi.Services
                 .FirstOrDefaultAsync();
         }
 
+        // Aktif makineleri getir (IsDeleted = 0)
         public async Task<IEnumerable<Machine>> GetAllMachinesAsync()
         {
             return await _context.Machines
-                .Where(m => m.CompanyId == _companyId)
+                .Where(m => m.CompanyId == _companyId && m.IsDeleted == 0)
+                .ToListAsync();
+        }
+
+// Silinmiş makineleri getir (IsDeleted = 1)
+        public async Task<IEnumerable<Machine>> GetDeletedMachinesAsync()
+        {
+            return await _context.Machines
+                .Where(m => m.CompanyId == _companyId && m.IsDeleted == 1)
                 .ToListAsync();
         }
     }

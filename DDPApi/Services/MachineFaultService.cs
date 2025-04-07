@@ -15,7 +15,7 @@ namespace DDPApi.Services
         {
             _context = context;
             _httpContextAccessor = httpContextAccessor;
-            
+
             // JWT'den CompanyId'yi al
             var companyIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("CompanyId");
             if (companyIdClaim != null && int.TryParse(companyIdClaim.Value, out int companyId))
@@ -23,46 +23,49 @@ namespace DDPApi.Services
                 _companyId = companyId;
             }
         }
-        
+
         public async Task<MachineFault> AddFaultAsync(MachineFault fault)
         {
-            // CompanyId kontrolü
-            if (fault.Machine != null && fault.Machine.CompanyId != _companyId)
-            {
-                throw new UnauthorizedAccessException("Bu şirkete ait olmayan makine için arıza kaydı oluşturamazsınız.");
-            }
-            
-            // Makine bilgisini kontrol et ve doğrula
+            // İlgili makineyi veritabanından çekiyoruz
             var machine = await _context.Machines.FindAsync(fault.MachineId);
+
             if (machine == null || machine.CompanyId != _companyId)
             {
-                throw new UnauthorizedAccessException("Bu şirkete ait olmayan makine için arıza kaydı oluşturamazsınız.");
+                throw new UnauthorizedAccessException(
+                    "Bu şirkete ait olmayan makine için arıza kaydı oluşturamazsınız.");
             }
-            
+
+            // İlişkiyi doğru kurmak için makineyi nesneye set ediyoruz
+            fault.Machine = machine;
             fault.CreatedAt = DateTime.UtcNow;
+            fault.UpdatedAt = DateTime.UtcNow;
+
             await _context.MachineFaults.AddAsync(fault);
             await _context.SaveChangesAsync();
+
             return fault;
         }
+
 
         public async Task<MachineFault> UpdateFaultAsync(int faultId, MachineFault updatedFault)
         {
             var fault = await _context.MachineFaults
                 .Include(f => f.Machine)
                 .FirstOrDefaultAsync(f => f.FaultId == faultId && f.Machine.CompanyId == _companyId);
-                
+
             if (fault == null)
             {
                 return null; // Bu şirkete ait arıza bulunamadı
             }
-            
+
             // Yeni makine bilgisini doğrula
             if (updatedFault.MachineId != fault.MachineId)
             {
                 var newMachine = await _context.Machines.FindAsync(updatedFault.MachineId);
                 if (newMachine == null || newMachine.CompanyId != _companyId)
                 {
-                    throw new UnauthorizedAccessException("Bu şirkete ait olmayan makine için arıza kaydı güncelleyemezsiniz.");
+                    throw new UnauthorizedAccessException(
+                        "Bu şirkete ait olmayan makine için arıza kaydı güncelleyemezsiniz.");
                 }
             }
 
@@ -80,7 +83,7 @@ namespace DDPApi.Services
             var fault = await _context.MachineFaults
                 .Include(f => f.Machine)
                 .FirstOrDefaultAsync(f => f.FaultId == faultId && f.Machine.CompanyId == _companyId);
-                
+
             if (fault == null)
             {
                 return false; // Bu şirkete ait arıza bulunamadı
@@ -138,7 +141,7 @@ namespace DDPApi.Services
             {
                 return 0; // Bu şirkete ait olmayan makine için 0 dön
             }
-            
+
             return await _context.MachineFaults.CountAsync(f => f.MachineId == machineId);
         }
 
@@ -161,7 +164,7 @@ namespace DDPApi.Services
                 .Select(f => f.Machine)
                 .Distinct()
                 .ToListAsync();
-                
+
             return latestFaults;
         }
     }

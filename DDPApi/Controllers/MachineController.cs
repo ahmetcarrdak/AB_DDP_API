@@ -54,7 +54,7 @@ namespace DDPApi.Controllers
             return CreatedAtAction(nameof(GetMachine), new { id = createdMachine.Id }, createdMachine);
         }
 
-        [HttpDelete("{id}")]
+        [HttpPut("Deleted/{id}")]
         public async Task<IActionResult> DeleteMachine(int id)
         {
             var result = await _machineService.DeleteMachineAsync(id);
@@ -62,7 +62,27 @@ namespace DDPApi.Controllers
             if (!result)
                 return NotFound();
 
-            return NoContent();
+            return Ok("success");
+        }
+        
+        
+        [HttpPut("{id}/Restore")]
+        public async Task<IActionResult> RestoreMachine(int id)
+        {
+            var result = await _machineService.RestoreMachineAsync(id);
+
+            if (!result)
+                return NotFound();
+
+            return Ok("success");
+        }
+        
+        // Silinmiş makineler
+        [HttpGet("deleted")]
+        public async Task<IActionResult> GetDeleted()
+        {
+            var deletedMachines = await _machineService.GetDeletedMachinesAsync();
+            return Ok(deletedMachines);
         }
     }
 }

@@ -11,7 +11,7 @@ namespace DDPApi.Models
         [Required] public int MachineId { get; set; }
         // Arızaya neden olan makinenin adı.
 
-        [Required][MaxLength(50)] public string MachineCode { get; set; }
+        [MaxLength(50)] public string MachineCode { get; set; }
         // Makineye ait benzersiz kod (örn. seri numarası veya envanter numarası).
 
         [Required] public DateTime FaultStartDate { get; set; }
