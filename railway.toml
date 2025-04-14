@@ -3,5 +3,5 @@ builder = "dockerfile"
 dockerfilePath = "./DDPApi/Dockerfile"
 
 [deploy]
-startCommand = "./DDPApi"
+startCommand = "./"
 restartPolicyType = "always"
