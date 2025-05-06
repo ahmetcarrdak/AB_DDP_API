@@ -91,11 +91,6 @@ public class ProductionInstructionService : IProductionInstruction
             production = seans;
         }
 
-        // Üretim adedi kontrolü
-        int totalProduced = production.ProductToSeans.Sum(s => s.count);
-        if (totalProduced + count > production.Count)
-            return "Üretim adedi aşıldı!";
-
         // 2️⃣ Barkodu okuttuğunda status kontrolü
         var existingBatch = production.ProductToSeans
             .FirstOrDefault(s => s.machineId == machineId && s.barcode == barcode);
@@ -116,11 +111,9 @@ public class ProductionInstructionService : IProductionInstruction
             }
 
             // Üretim adedini güncelle
-            int availableCapacity = existingBatch.BatchSize - existingBatch.count;
-            int toAdd = Math.Min(availableCapacity, count);
-            existingBatch.count += toAdd;
+            existingBatch.count += count;
 
-            if (existingBatch.count == existingBatch.BatchSize)
+            if (existingBatch.count >= existingBatch.BatchSize)
                 existingBatch.isCompleted = true;
 
             await _context.SaveChangesAsync();
@@ -132,32 +125,31 @@ public class ProductionInstructionService : IProductionInstruction
         while (remaining > 0)
         {
             var incompleteBatch = production.ProductToSeans
-                .FirstOrDefault(s => s.machineId == machineId && s.count < s.BatchSize);
+                .FirstOrDefault(s => s.machineId == machineId && !s.isCompleted);
 
             if (incompleteBatch != null)
             {
-                int availableCapacity = incompleteBatch.BatchSize - incompleteBatch.count;
-                int toAdd = Math.Min(availableCapacity, remaining);
+                int toAdd = remaining;
                 incompleteBatch.count += toAdd;
                 remaining -= toAdd;
 
-                if (incompleteBatch.count == incompleteBatch.BatchSize)
+                if (incompleteBatch.count >= incompleteBatch.BatchSize)
                     incompleteBatch.isCompleted = true;
             }
             else
             {
-                int batchSize = Math.Min(remaining, production.Count - totalProduced);
                 var newBatch = new ProductToSeans
                 {
                     ProductId = production.Id,
-                    count = batchSize,
+                    count = remaining,
                     barcode = Guid.NewGuid().ToString("N").Substring(0, 8),
                     machineId = machineId,
-                    BatchSize = batchSize,
-                    status = 1
+                    BatchSize = remaining, // BatchSize'ı kalan adet kadar yapıyoruz
+                    status = 1,
+                    isCompleted = true // Tek seferde tamamlandı olarak işaretliyoruz
                 };
                 production.ProductToSeans.Add(newBatch);
-                remaining -= batchSize;
+                remaining = 0;
             }
         }
 
