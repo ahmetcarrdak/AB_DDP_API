@@ -72,95 +72,123 @@ public class ProductionInstructionService : IProductionInstruction
 
     public async Task<string> ProcessMachineOperation(int machineId, string barcode, int count)
     {
-        // 1️⃣ Ana üretim talimatını veya seansı bul
+        // 1️⃣ Üretim talimatını veya seansı bul
         var production = await _context.ProductionInstructions
-            .Include(p => p.ProductionToMachines)
-            .Include(p => p.ProductToSeans)
-            .FirstOrDefaultAsync(p => p.Barcode == barcode);
+                             .Include(p => p.ProductionToMachines)
+                             .ThenInclude(pm => pm.Machine)
+                             .Include(p => p.ProductToSeans)
+                             .FirstOrDefaultAsync(p => p.Barcode == barcode)
+                         ?? await _context.ProductionInstructions
+                             .Include(p => p.ProductToSeans)
+                             .FirstOrDefaultAsync(p => p.ProductToSeans.Any(s => s.barcode == barcode));
 
-        // Üretim talimatı bulunamazsa seans üzerinden arama yap
         if (production == null)
+            return "Üretim talimatı veya seans bulunamadı!";
+
+        // 2️⃣ Makine atanmış mı kontrol et
+        if (!production.ProductionToMachines.Any())
+            return "Bu üretim için makine ataması yapılmamış!";
+
+        // 3️⃣ İşlem yapılan makinenin üretim sırasındaki konumunu bul
+        var currentMachine = production.ProductionToMachines
+            .FirstOrDefault(pm => pm.MachineId == machineId);
+
+        if (currentMachine == null)
+            return "Bu makine bu üretim hattında tanımlı değil!";
+
+        // 4️⃣ Önceki makinelerden çıkış yapılmış mı kontrol et
+        var previousMachines = production.ProductionToMachines
+            .Where(pm => pm.Line < currentMachine.Line)
+            .ToList();
+
+        foreach (var prevMachine in previousMachines)
         {
-            var seans = await _context.ProductionInstructions
-                .Include(p => p.ProductToSeans)
-                .FirstOrDefaultAsync(p => p.ProductToSeans.Any(s => s.barcode == barcode));
+            var prevMachineSessions = production.ProductToSeans
+                .Where(s => s.machineId == prevMachine.MachineId)
+                .ToList();
 
-            if (seans == null)
-                return "Üretim talimatı veya seans bulunamadı!";
+            if (!prevMachineSessions.Any())
+                return $"{prevMachine.Machine.Name} makinesinden geçiş yapılmamış!";
 
-            production = seans;
+            if (prevMachineSessions.Any(s => s.status != 2))
+                return $"{prevMachine.Machine.Name} makinesinden çıkış yapılmamış!";
         }
 
-        // 2️⃣ Barkodu okuttuğunda status kontrolü
-        var existingBatch = production.ProductToSeans
+        // 5️⃣ Mevcut makinedeki seansı bul veya oluştur
+        var existingSession = production.ProductToSeans
             .FirstOrDefault(s => s.machineId == machineId && s.barcode == barcode);
 
-        if (existingBatch != null)
+        if (existingSession != null)
         {
-            if (existingBatch.status == 2)
-            {
+            // Çıkış yapılmışsa işleme izin verme
+            if (existingSession.status == 2)
                 return "Bu makineden çıkış yapılmış!";
-            }
-            else if (existingBatch.status == 0)
-            {
-                existingBatch.status = 1;
-            }
-            else if (existingBatch.status == 1)
-            {
-                existingBatch.status = 2;
-            }
 
-            // Üretim adedini güncelle
-            existingBatch.count += count;
+            // Giriş yapılmamışsa giriş yap
+            if (existingSession.status == 0)
+                existingSession.status = 1;
 
-            if (existingBatch.count >= existingBatch.BatchSize)
-                existingBatch.isCompleted = true;
+            // Adet güncelleme
+            existingSession.count += count;
+
+            // Batch boyutuna ulaştıysa tamamlandı olarak işaretle
+            if (existingSession.count >= existingSession.BatchSize)
+                existingSession.isCompleted = true;
 
             await _context.SaveChangesAsync();
             return "Seans güncellendi!";
         }
 
-        // 3️⃣ Yeni Parti Oluşturma ve Kontrol
-        int remaining = count;
-        while (remaining > 0)
+        // 6️⃣ Yeni seans oluştur
+        var newSession = new ProductToSeans
         {
-            var incompleteBatch = production.ProductToSeans
-                .FirstOrDefault(s => s.machineId == machineId && !s.isCompleted);
+            ProductId = production.Id,
+            count = count,
+            barcode = string.IsNullOrEmpty(barcode) ? Guid.NewGuid().ToString("N").Substring(0, 8) : barcode,
+            machineId = machineId,
+            BatchSize = production.Count, // Varsayılan batch boyutu
+            status = 1, // Giriş yapıldı olarak işaretle
+            isCompleted = count >= production.Count
+        };
 
-            if (incompleteBatch != null)
-            {
-                int toAdd = remaining;
-                incompleteBatch.count += toAdd;
-                remaining -= toAdd;
+        production.ProductToSeans.Add(newSession);
 
-                if (incompleteBatch.count >= incompleteBatch.BatchSize)
-                    incompleteBatch.isCompleted = true;
-            }
-            else
+        // 7️⃣ Makine giriş tarihini güncelle (ilk girişse)
+        if (currentMachine.Status == 0)
+        {
+            currentMachine.Status = 1;
+            currentMachine.EntryDate = DateTime.UtcNow;
+        }
+
+        // 8️⃣ Tüm makinelerden geçiş yapıldı mı kontrol et
+        var allMachines = production.ProductionToMachines.OrderBy(pm => pm.Line).ToList();
+        bool allCompleted = true;
+
+        foreach (var machine in allMachines)
+        {
+            var sessions = production.ProductToSeans
+                .Where(s => s.machineId == machine.MachineId)
+                .ToList();
+
+            if (!sessions.Any() || sessions.Any(s => s.status != 2))
             {
-                var newBatch = new ProductToSeans
-                {
-                    ProductId = production.Id,
-                    count = remaining,
-                    barcode = Guid.NewGuid().ToString("N").Substring(0, 8),
-                    machineId = machineId,
-                    BatchSize = remaining, // BatchSize'ı kalan adet kadar yapıyoruz
-                    status = 1,
-                    isCompleted = true // Tek seferde tamamlandı olarak işaretliyoruz
-                };
-                production.ProductToSeans.Add(newBatch);
-                remaining = 0;
+                allCompleted = false;
+                break;
             }
         }
 
-        // 4️⃣ Üretim tamamlama kontrolü (Tüm makinelerden çıkış yapılmış mı?)
-        bool allMachinesExited = production.ProductToSeans
-            .All(s => s.status == 2);
-
-        if (allMachinesExited)
+        // 9️⃣ Üretim tamamlandıysa işaretle
+        if (allCompleted)
         {
             production.isComplated = 1;
             production.ComplatedDate = DateTime.UtcNow;
+
+            // Tüm makinelerin çıkış tarihini güncelle
+            foreach (var machine in allMachines.Where(m => m.ExitDate == null))
+            {
+                machine.ExitDate = DateTime.UtcNow;
+                machine.Status = 2;
+            }
         }
         else
         {
