@@ -179,21 +179,38 @@ public class ProductionInstructionService : IProductionInstruction
 
     public async Task CheckProductionCompletion(ProductionInstruction production)
     {
-        var allMachinesExited = production.ProductionToMachines
-            .All(machine => production.ProductToSeans
-                .Where(s => s.machineId == machine.MachineId)
-                .All(s => s.status == 2));
-
-        production.isComplated = allMachinesExited ? 1 : 0;
-        
-        if (allMachinesExited)
+        // 1. TÜM makineleri tek tek kontrol et
+        var tumMakinelerTamamMi = production.ProductionToMachines.All(makina => 
         {
+            // Makinedeki tüm seansları getir
+            var makinaSeanslari = production.ProductToSeans
+                .Where(s => s.machineId == makina.MachineId)
+                .ToList();
+
+            // 1.1. Makinede hiç seans yoksa tamamlanmamış say
+            if (!makinaSeanslari.Any())
+                return false;
+
+            // 1.2. Tüm seansların ÇIKIŞ yapılmış VE tamamlanmış olması lazım
+            return makinaSeanslari.All(s => s.status == 2 && s.isCompleted);
+        });
+
+        // 2. SADECE tüm makineler tamamsa üretimi tamamla
+        if (tumMakinelerTamamMi)
+        {
+            production.isComplated = 1; // Tamamlandı
             production.ComplatedDate = DateTime.UtcNow;
-            foreach (var machine in production.ProductionToMachines.Where(m => m.ExitDate == null))
+        
+            // Çıkış tarihi girilmemiş makineleri güncelle
+            foreach (var makina in production.ProductionToMachines.Where(m => m.ExitDate == null))
             {
-                machine.ExitDate = DateTime.UtcNow;
-                machine.Status = 2;
+                makina.ExitDate = DateTime.UtcNow;
+                makina.Status = 2;
             }
+        }
+        else
+        {
+            production.isComplated = 0; // Tamamlanmadı
         }
     }
 }
