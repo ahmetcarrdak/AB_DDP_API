@@ -3,9 +3,11 @@ using DDPApi.Interfaces;
 using DDPApi.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DDPApi.Data;
+using Microsoft.AspNetCore.Http;
 
 public class ProductionInstructionService : IProductionInstruction
 {
@@ -17,70 +19,81 @@ public class ProductionInstructionService : IProductionInstruction
     {
         _context = context;
         _httpContextAccessor = httpContextAccessor;
+        _companyId = GetCompanyIdFromToken();
+    }
 
-        // JWT'den CompanyId'yi al
+    private int GetCompanyIdFromToken()
+    {
         var companyIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("CompanyId");
-        if (companyIdClaim != null && int.TryParse(companyIdClaim.Value, out int companyId))
-        {
-            _companyId = companyId;
-        }
+        return companyIdClaim != null && int.TryParse(companyIdClaim.Value, out int companyId) 
+            ? companyId 
+            : throw new UnauthorizedAccessException("Geçersiz şirket kimliği");
     }
 
     public async Task<ProductionInstruction> CreateProductionInstructionAsync(ProductionInstructionDto instructionDto)
     {
-        if (instructionDto == null) throw new ArgumentNullException(nameof(instructionDto));
+        if (instructionDto == null) 
+            throw new ArgumentNullException(nameof(instructionDto));
 
-        var instruction = new ProductionInstruction
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
         {
-            Title = instructionDto.Title,
-            Description = instructionDto.Description,
-            InsertDate = DateTime.UtcNow,
-            CompanyId = _companyId,
-            Barcode = instructionDto.Barcode,
-            Count = instructionDto.Count
-        };
-
-        // ✅ ProductionToMachine tablosuna DTO'dan gelen verileri ekleme
-        instruction.ProductionToMachines = instructionDto.ProductionToMachines
-            .Select(machine => new ProductionToMachine
+            var instruction = new ProductionInstruction
             {
-                MachineId = machine.MachineId,
-                Line = machine.Line,
-            }).ToList();
+                Title = instructionDto.Title,
+                Description = instructionDto.Description,
+                InsertDate = DateTime.UtcNow,
+                CompanyId = _companyId,
+                Barcode = instructionDto.Barcode ?? Guid.NewGuid().ToString("N").Substring(0, 10),
+                Count = instructionDto.Count,
+                ProductionToMachines = instructionDto.ProductionToMachines?
+                    .Select(m => new ProductionToMachine
+                    {
+                        MachineId = m.MachineId,
+                        Line = m.Line,
+                        Status = 0,
+                        EntryDate = null,
+                        ExitDate = null
+                    }).ToList() ?? new List<ProductionToMachine>(),
+                ProductionStores = instructionDto.ProductionStores ?? new List<ProductionStore>()
+            };
 
-        // ✅ ProductionStore doğrudan model olarak ekleniyor
-        instruction.ProductionStores = instructionDto.ProductionStores;
+            await _context.ProductionInstructions.AddAsync(instruction);
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
 
-        _context.ProductionInstructions.Add(instruction);
-        await _context.SaveChangesAsync();
-
-        return instruction;
+            return instruction;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
-    // CompanyId'ye göre tüm üretim talimatlarını ve ilişkili verileri getirme
     public async Task<List<ProductionInstruction>> GetProductionInstructionsByCompanyIdAsync()
     {
-        var instructions = await _context.ProductionInstructions
-            .Where(pi => pi.CompanyId == _companyId)
+        return await _context.ProductionInstructions
+            .Where(pi => pi.CompanyId == _companyId && pi.isDeleted == 0)
             .Include(pi => pi.ProductionToMachines)
-            .ThenInclude(ptm => ptm.Machine) // ✅ Machine bilgilerini yükle
+                .ThenInclude(ptm => ptm.Machine)
             .Include(pi => pi.ProductionStores)
-            .Include(pi => pi.ProductToSeans) // ✅ Seans bilgilerini yükle
+            .Include(pi => pi.ProductToSeans)
+            .OrderByDescending(pi => pi.InsertDate)
             .ToListAsync();
-        return instructions;
     }
 
-   public async Task<(bool Success, string Message, ProductionInstruction? Production)> 
+    public async Task<(bool Success, string Message, ProductionInstruction? Production)> 
         ValidateProduction(string barcode)
     {
         var production = await _context.ProductionInstructions
             .Include(p => p.ProductionToMachines)
                 .ThenInclude(pm => pm.Machine)
             .Include(p => p.ProductToSeans)
-            .FirstOrDefaultAsync(p => p.Barcode == barcode)
+            .FirstOrDefaultAsync(p => p.Barcode == barcode && p.CompanyId == _companyId)
             ?? await _context.ProductionInstructions
                 .Include(p => p.ProductToSeans)
-                .FirstOrDefaultAsync(p => p.ProductToSeans.Any(s => s.barcode == barcode));
+                .FirstOrDefaultAsync(p => p.ProductToSeans.Any(s => s.barcode == barcode) && p.CompanyId == _companyId);
 
         if (production == null)
             return (false, "Üretim talimatı veya seans bulunamadı!", null);
@@ -102,21 +115,19 @@ public class ProductionInstructionService : IProductionInstruction
 
         var previousMachines = production.ProductionToMachines
             .Where(pm => pm.Line < currentMachine.Line)
+            .OrderBy(pm => pm.Line)
             .ToList();
 
         foreach (var prevMachine in previousMachines)
         {
-            var hasSession = production.ProductToSeans
-                .Any(s => s.machineId == prevMachine.MachineId);
-            
-            if (!hasSession)
+            var sessions = production.ProductToSeans
+                .Where(s => s.machineId == prevMachine.MachineId)
+                .ToList();
+
+            if (!sessions.Any())
                 return (false, $"{prevMachine.Machine.Name} makinesinden geçiş yapılmamış!");
 
-            var allExited = production.ProductToSeans
-                .Where(s => s.machineId == prevMachine.MachineId)
-                .All(s => s.status == 2);
-            
-            if (!allExited)
+            if (!sessions.All(s => s.status == 2))
                 return (false, $"{prevMachine.Machine.Name} makinesinden çıkış yapılmamış!");
         }
 
@@ -145,7 +156,7 @@ public class ProductionInstructionService : IProductionInstruction
             machineId = machineId,
             BatchSize = production.Count,
             status = 1,
-            isCompleted = count >= production.Count
+            isCompleted = count >= production.Count,
         };
 
         production.ProductToSeans.Add(newSession);
