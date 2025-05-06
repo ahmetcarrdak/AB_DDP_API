@@ -11,10 +11,20 @@ using DDPApi.Data;
 public class ProductionInstructionService : IProductionInstruction
 {
     private readonly AppDbContext _context;
+    private readonly int _companyId;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public ProductionInstructionService(AppDbContext context)
+    public ProductionInstructionService(AppDbContext context, IHttpContextAccessor httpContextAccessor)
     {
         _context = context;
+        _httpContextAccessor = httpContextAccessor;
+        
+        // JWT'den CompanyId'yi al
+        var companyIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("CompanyId");
+        if (companyIdClaim != null && int.TryParse(companyIdClaim.Value, out int companyId))
+        {
+            _companyId = companyId;
+        }
     }
 
     public async Task<ProductionInstruction> CreateProductionInstructionAsync(ProductionInstructionDto instructionDto)
@@ -35,6 +45,7 @@ public class ProductionInstructionService : IProductionInstruction
                     EntryDate = null,
                     ExitDate = null
                 }).ToList() ?? new List<ProductionToMachine>(),
+            CompanyId = _companyId,
         };
 
         await _context.ProductionInstructions.AddAsync(production);
@@ -45,6 +56,7 @@ public class ProductionInstructionService : IProductionInstruction
     public async Task<List<ProductionInstruction>> GetProductionInstructionsByCompanyIdAsync()
     {
         return await _context.ProductionInstructions
+            .Where(p => p.CompanyId == _companyId)
             .Include(p => p.ProductionToMachines)
             .ThenInclude(m => m.Machine)
             .Include(p => p.ProductToSeans)
