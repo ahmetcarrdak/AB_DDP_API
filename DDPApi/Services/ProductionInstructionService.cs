@@ -76,10 +76,23 @@ public class ProductionInstructionService : IProductionInstruction
         return await _context.ProductionInstructions
             .Where(pi => pi.CompanyId == _companyId && pi.isDeleted == 0)
             .Include(pi => pi.ProductionToMachines)
-                .ThenInclude(ptm => ptm.Machine)
+            .ThenInclude(ptm => ptm.Machine)
             .Include(pi => pi.ProductionStores)
             .Include(pi => pi.ProductToSeans)
-            .OrderByDescending(pi => pi.InsertDate)
+            .OrderByDescending(pi => pi.InsertDate) // Üretim talimatlarını yeniden eskiye
+            .Select(pi => new ProductionInstruction
+            {
+                // Tüm gerekli alanları burada belirtin
+                Id = pi.Id,
+                Title = pi.Title,
+                // Diğer alanlar...
+                ProductionToMachines = pi.ProductionToMachines
+                    .OrderBy(ptm => ptm.Line) // Makineleri Line'a göre sırala
+                    .ThenBy(ptm => ptm.Id) // Aynı Line numarasına sahipse eklenme sırasına göre
+                    .ToList(),
+                ProductionStores = pi.ProductionStores,
+                ProductToSeans = pi.ProductToSeans
+            })
             .ToListAsync();
     }
 
