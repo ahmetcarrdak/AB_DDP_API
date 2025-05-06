@@ -1,11 +1,14 @@
+using DDPApi.DTO;
+using DDPApi.Interfaces;
 using DDPApi.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DDPApi.Data;
 
-public class ProductionInstructionService
+public class ProductionInstructionService : IProductionInstruction
 {
     private readonly AppDbContext _context;
 
@@ -14,107 +17,117 @@ public class ProductionInstructionService
         _context = context;
     }
 
-    public async Task<string> ProcessMachineOperation(int machineId, string barcode, int count)
+    public async Task<ProductionInstruction> CreateProductionInstructionAsync(ProductionInstructionDto instructionDto)
     {
-        // 1. Üretim talimatını bul
+        var production = new ProductionInstruction
+        {
+            Barcode = instructionDto.Barcode,
+            Count = instructionDto.Count,
+            Title = instructionDto.Title,
+            Description = instructionDto.Description,
+            InsertDate = DateTime.UtcNow,
+            ProductionToMachines = instructionDto.ProductionToMachines?
+                .Select(m => new ProductionToMachine
+                {
+                    MachineId = m.MachineId,
+                    Line = m.Line,
+                    Status = 0,
+                    EntryDate = null,
+                    ExitDate = null
+                }).ToList() ?? new List<ProductionToMachine>(),
+        };
+
+        await _context.ProductionInstructions.AddAsync(production);
+        await _context.SaveChangesAsync();
+        return production;
+    }
+
+    public async Task<List<ProductionInstruction>> GetProductionInstructionsByCompanyIdAsync()
+    {
+        return await _context.ProductionInstructions
+            .Include(p => p.ProductionToMachines)
+            .ThenInclude(m => m.Machine)
+            .Include(p => p.ProductToSeans)
+            .OrderByDescending(p => p.InsertDate)
+            .ToListAsync();
+    }
+
+    public async Task<(bool Success, string Message, ProductionInstruction? Production)> ValidateProduction(string barcode)
+    {
         var production = await _context.ProductionInstructions
             .Include(p => p.ProductionToMachines)
+            .ThenInclude(m => m.Machine)
             .Include(p => p.ProductToSeans)
             .FirstOrDefaultAsync(p => p.Barcode == barcode);
 
-        if (production == null)
-            return "Üretim talimatı bulunamadı";
+        if (production == null) 
+            return (false, "Üretim talimatı bulunamadı", null);
 
-        // 2. Üretim sınır kontrolü
-        var totalProduced = production.ProductToSeans.Sum(s => s.count);
-        if (totalProduced + count > production.Count)
-            return "Üretim sınırı aşıldı";
-
-        // 3. Makine kontrolü
-        var currentMachine = production.ProductionToMachines
-            .FirstOrDefault(pm => pm.MachineId == machineId);
-
-        if (currentMachine == null)
-            return "Bu makine üretim hattında değil";
-
-        // 4. Önceki makineler kontrolü
-        var previousMachines = production.ProductionToMachines
-            .Where(pm => pm.Line < currentMachine.Line)
-            .OrderBy(pm => pm.Line)
-            .ToList();
-
-        foreach (var prevMachine in previousMachines)
-        {
-            var hasSession = production.ProductToSeans
-                .Any(s => s.machineId == prevMachine.MachineId);
-
-            if (!hasSession)
-                return $"makinesinden geçiş yapılmamış";
-        }
-
-        // 5. Mevcut seansı bul veya oluştur
-        var session = production.ProductToSeans
-            .FirstOrDefault(s => s.machineId == machineId && s.barcode == barcode);
-
-        if (session == null)
-        {
-            session = new ProductToSeans
-            {
-                ProductId = production.Id,
-                machineId = machineId,
-                barcode = barcode,
-                count = count,
-                status = 1
-            };
-            production.ProductToSeans.Add(session);
-        }
-        else
-        {
-            session.count += count;
-        }
-
-        // 6. Makine durumunu güncelle
-        if (currentMachine.Status == 0)
-        {
-            currentMachine.Status = 1;
-            currentMachine.EntryDate = DateTime.Now;
-        }
-
-        await _context.SaveChangesAsync();
-        return "İşlem başarılı";
+        return (true, string.Empty, production);
     }
 
-    public async Task<string> ExitMachine(int machineId, string barcode)
+    public async Task<(bool Success, string Message)> CheckPreviousMachines(ProductionInstruction production, int currentMachineId)
     {
-        // 1. Üretim talimatını bul
-        var production = await _context.ProductionInstructions
-            .Include(p => p.ProductionToMachines)
-            .Include(p => p.ProductToSeans)
-            .FirstOrDefaultAsync(p => p.ProductToSeans.Any(s => s.barcode == barcode));
+        var currentMachine = production.ProductionToMachines.FirstOrDefault(m => m.MachineId == currentMachineId);
+        if (currentMachine == null)
+            return (false, "Mevcut makine bulunamadı");
 
-        if (production == null)
-            return "Üretim talimatı bulunamadı";
+        var previousMachines = production.ProductionToMachines
+            .Where(m => m.Line < currentMachine.Line)
+            .OrderBy(m => m.Line);
 
-        // 2. Seansı bul
-        var session = production.ProductToSeans
+        foreach (var machine in previousMachines)
+        {
+            if (!production.ProductToSeans.Any(s => s.machineId == machine.MachineId))
+                return (false, $"{machine.Machine.Name} makinesi atlanmış");
+        }
+
+        return (true, string.Empty);
+    }
+
+    public async Task<(bool Success, string Message, ProductToSeans? Session)> GetOrCreateSession(
+        ProductionInstruction production, int machineId, string barcode, int count)
+    {
+        var existingSession = production.ProductToSeans
             .FirstOrDefault(s => s.machineId == machineId && s.barcode == barcode);
 
-        if (session == null)
-            return "Seans bulunamadı";
+        if (existingSession != null)
+        {
+            if (existingSession.status == 2)
+                return (false, "Bu seans zaten tamamlanmış", null);
 
-        // 3. Makineyi bul
-        var machine = production.ProductionToMachines
-            .FirstOrDefault(pm => pm.MachineId == machineId);
+            return (true, string.Empty, existingSession);
+        }
 
-        if (machine == null)
-            return "Makine bulunamadı";
+        var newSession = new ProductToSeans
+        {
+            ProductId = production.Id,
+            machineId = machineId,
+            barcode = barcode,
+            count = count,
+            status = 0
+        };
 
-        // 4. Çıkış işlemi
-        session.status = 2;
-        machine.Status = 2;
-        machine.ExitDate = DateTime.Now;
+        production.ProductToSeans.Add(newSession);
+        return (true, string.Empty, newSession);
+    }
 
+    public async Task UpdateMachineStatus(ProductionToMachine machine, int newStatus)
+    {
+        machine.Status = newStatus;
+        if (newStatus == 1) machine.EntryDate = DateTime.UtcNow;
+        if (newStatus == 2) machine.ExitDate = DateTime.UtcNow;
         await _context.SaveChangesAsync();
-        return "Çıkış işlemi başarılı";
+    }
+
+    public async Task CheckProductionCompletion(ProductionInstruction production)
+    {
+        var allCompleted = production.ProductionToMachines.All(machine => 
+            production.ProductToSeans.Any(s => 
+                s.machineId == machine.MachineId && 
+                s.status == 2));
+
+        production.isComplated = allCompleted ? 1 : 0;
+        await _context.SaveChangesAsync();
     }
 }
